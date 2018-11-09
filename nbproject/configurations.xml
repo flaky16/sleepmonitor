@@ -16,6 +16,8 @@
       <itemPath>ADC_read.asm</itemPath>
       <itemPath>LCD.asm</itemPath>
       <itemPath>Hex_to_Decimal.asm</itemPath>
+      <itemPath>UART.asm</itemPath>
+      <itemPath>config.asm</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

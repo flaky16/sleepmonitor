@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=Sleepmonitor.X
+PROJECTNAME=sleepmonitor
 
 # Active Configuration
 DEFAULTCONF=default

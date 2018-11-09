@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	extern  LCD_Setup, LCD_Write_Message	    ; external LCD subroutines
-	extern	LCD_Write_Hex			    ; external LCD subroutines
+	extern		LCD_Write_Hex		    ; external LCD subroutines
 	extern  ADC_Setup, ADC_Read		    ; external ADC routines
 	global  measure_loop , Hex_setup
 	
@@ -56,10 +56,11 @@ Hex_setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	
 measure_loop
-	call	ADC_Read
-	movf	ADRESH,W
+	;call	ADC_Read
+	;movf	ADRESH,W
+	movlw   0x00
 	movwf	hexvoltagehigh
-	movf	ADRESL,W
+	movf	PORTD,W
 	movwf	hexvoltagelow
 	;movf	ADRESH,W
 	;call	LCD_Write_Hex
@@ -113,13 +114,13 @@ measure_loop
 	movwf voltage4
 	
 	movf	voltage1,W
-	call	LCD_Write_Hex
+	call	LCD_Write_Hex	
 	movf	voltage2,W
-	call	LCD_Write_Hex
+	call	LCD_Write_Hex	
 	movf	voltage3,W
-	call	LCD_Write_Hex
+	call	LCD_Write_Hex	
 	movf	voltage4,W
-	call	LCD_Write_Hex
+	call	LCD_Write_Hex	
 	
 	return
 	
