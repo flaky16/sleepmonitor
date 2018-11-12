@@ -89,13 +89,9 @@ loop
     
     btfsc   PORTD, RD0
     call    rd01
-   ; movlw  0x00
-    ;movwf  ADRESH
-   ; movff  PORTD, ADRESL
-    ;movff PORTD, ADRESH
-    
 
     bra loop
+
     
 rd00
     call measure_loop
