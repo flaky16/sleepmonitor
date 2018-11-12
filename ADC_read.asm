@@ -1,7 +1,8 @@
 #include p18f87k22.inc
 
     global  ADC_Setup, Read_x,Read_y , Read_z
-
+    
+acs0	udata_acs   ; reserve data space in access ram
 count  res 1
 carry  res 4
   
@@ -88,10 +89,13 @@ reduce			    ; Read data in 12-bits, reduces to 8-bits in ADRESL
     call    updatecarry1	    ; Carry = 1 , High = High - 1
     
  loop4times 
-    ; Use carry 0-3 as c to rotate each loop
-    movff   POSTDEC0 , c
-    ;movff   TABLAT , c 
-    rrf     ADRESL,ADRESL
+				    
+    movff   POSTDEC0 , TABLAT
+    clrc			    ; Clear carry
+    decfsz  TABLAT		    ; Skip if tablat zero
+    setc			    ; Set carry if tablat != 0
+    
+    rrcf     ADRESL		    ; Rotate right with carry
     decfsz  count
     bra     loop4times
     return		; Return the new 8 bit measurement in ADRESL
