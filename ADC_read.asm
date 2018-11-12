@@ -56,7 +56,6 @@ adc_loop
     return
 
 reduce			    ; Read data in 12-bits, reduces to 8-bits in ADRESL
-   ; Carry stored in ADRESH
     lfsr    FSR0, carry     ; carry adressed stored here
    
     movlw   0x07
@@ -73,7 +72,6 @@ reduce			    ; Read data in 12-bits, reduces to 8-bits in ADRESL
     cpfsgt  ADRESH		    ; skip if High < 4
     call    updatecarry1	    ; Carry = 1 , High = High - 4
     
-   
     movlw  0x01
     cpfsgt  ADRESH	    ; skip if High > 1
     call    updatecarry0

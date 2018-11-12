@@ -89,11 +89,21 @@ loop
     
 rd00
     call measure_loop
+    
 loop1sec0
-    call    Read_x	    ; Get 8-bit number for x current
+    call    Read_x		    ; Get 8-bit number for x current
+    movff   x_0 , W
+    subwf   ADRESL
+    btfsc   STATUS , OV
+    call    overflow_correction
+    
+    movff   ADRESL , x_t	    ; The difference is stored
+    
+    movff   x_t , x_max
+    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
+    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
     
     
-;    
 ;    movff   x_0_H , W
 ;    subwf   ADRESH
 ;   
@@ -105,8 +115,6 @@ loop1sec0
 ;    cpfsgt  x_max_L		 ; Compare if current difference is higher than the max differennce
 ;    movff   x_t_L , x_max_L	; Update x_max for this 1 sec interval
 ;    
-;    movff  x_max_L , PORTF
-    
     movlw 0x04
     movwf PORTE
     movlw 0x02
@@ -116,10 +124,15 @@ loop1sec0
     btfss   PORTD, RD0
     bra loop1sec0
     
-    
+    movff  x_max , PORTF
     
     return
     
+ overflow_correction
+    movlw   0xFF
+    subwf   ADRESL
+    incf    ADRESL
+    return
     
  rd01
  
@@ -135,6 +148,7 @@ loop1sec0
     
     btfsc   PORTD, RD0
     bra loop1sec1
+    
     return
     
     
@@ -142,7 +156,7 @@ initialize_1second
     call    Read_x
     movff   ADRESL , x_0
     movlw   0x00
-    movwf   x_max_L
+    movwf   x_max
     
     ;    call    Read_y
 ;    movff   ADRESH , y_0_H
