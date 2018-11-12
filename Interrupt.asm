@@ -5,12 +5,28 @@
 	extern	UART_Setup, UART_Transmit_Message   ; external UART subroutines
 	extern  LCD_Setup, LCD_Write_Message	    ; external LCD subroutines
 	extern	LCD_Write_Hex			    ; external LCD subroutines
-	extern  ADC_Setup, ADC_Read		    ; external ADC routines
+	extern  ADC_Setup, Read_x,Read_y , Read_z		    ; external ADC routines
 	extern measure_loop , Hex_setup
 	
 acs0	udata_acs	
 check1sec res 1
-
+x_0_H	res 1
+x_0_L	res 1
+y_0_H	res 1
+y_0_L	res 1
+z_0_H	res 1
+z_0_L	res 1
+	
+x_t_H	res 1
+x_t_L	res 1
+	
+x_max_H	res 1
+x_max_L	res 1
+;y_0_H	res 1
+;y_0_L	res 1
+;z_0_H	res 1
+;z_0_L	res 1
+	
 tables	udata	0x400    ; reserve data anywhere in RAM (here at 0x400)
 myArray res 0x80    ; reserve 128 bytes for message data
 
@@ -50,8 +66,24 @@ start
     bsf	    INTCON,GIE ; Enable all interrupts 
     movlw   0x00
     movwf   TRISE
+        movlw   0x00
+    movwf   TRISF
 
 loop
+    call    Read_x
+    movff   ADRESH , x_0_H
+    movff   ADRESL , x_0_L
+    movlw   0x00
+    movwf   x_max_L
+    
+    call    Read_y
+    movff   ADRESH , y_0_H
+    movff   ADRESL , y_0_L
+    
+    call    Read_z
+    movff   ADRESH , z_0_H
+    movff   ADRESL , z_0_L
+    
     btfss   PORTD, RD0
     call    rd00
     
@@ -68,23 +100,50 @@ loop
 rd00
     call measure_loop
 loop1sec0
+    call    Read_x
+    movff   x_0_H , W
+    subwf   ADRESH
+   
+    movff   x_0_L  , W	    
+    subwf   ADRESL		; Take difference with initial Vx
+    movff   ADRESL , x_t_L	 ; store difference
+    movff   x_t_L , W
+    
+    cpfsgt  x_max_L		 ; Compare if current difference is higher than the max differennce
+    movff   x_t_L , x_max_L	; Update x_max for this 1 sec interval
+    
+    movff  x_max_L , PORTF
+    
     movlw 0x04
     movwf PORTE
+    movlw 0x02
+    subwf PORTE
+    
+    
     btfss   PORTD, RD0
     bra loop1sec0
- 
+    
+    
+    
     return
     
     
  rd01
+ 
     call measure_loop
+    
  loop1sec1
  
     movlw 0x05
     movwf PORTE
+    movlw 0x08
+    subwf PORTE
+    
+    
     btfsc   PORTD, RD0
     bra loop1sec1
     return
+   
     
     end
 

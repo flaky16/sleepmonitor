@@ -1,4 +1,4 @@
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  1
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -17,7 +17,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       02986         LIST
   0000                00002         extern  LCD_Setup, LCD_Write_Message        ; external LCD subroutines
   0000                00003         extern          LCD_Write_Hex               ; external LCD subroutines
-  0000                00004         extern  ADC_Setup, ADC_Read                 ; external ADC routines
+  0000                00004         extern  ADC_Setup, Read_x,Read_y , Read_z                   ; external ADC routines
   0000                00005         global  measure_loop , Hex_setup
                       00006         
                       00007         
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00041 ;rst    code    0    ; reset vector
                       00042         ;goto   setup
                       00043 
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  2
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -77,7 +77,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00000C 0012           00055         return
                       00056         
                       00057         
-00000E                00058 measure_loop
+00000E                00058 measure_loop            ;displaying port d
                       00059         ;call   ADC_Read
                       00060         ;movf   ADRESH,W
 00000E 0E00           00061         movlw   0x00
@@ -116,7 +116,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00003E EC?? F???      00094         call multiply8by24
 000042 50??           00095         movf result3high,W
 000044 6E??           00096         movwf voltage2
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  3
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -175,7 +175,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00147         ;call   LCD_Write_Hex
 0000B2 50??           00148         movf    result3low,W
                       00149         ;call   LCD_Write_Hex
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  4
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -234,7 +234,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00200         ;call   LCD_Write_Hex
 00011E 50??           00201         movf    resultmiddle,W
                       00202         ;call   LCD_Write_Hex
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  5
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -254,7 +254,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 000128 0012           00214         return
                       00215 
                       00216         end
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  6
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  6
 
 
 SYMBOL TABLE
@@ -297,7 +297,6 @@ ADCON2                            00000FC0
 ADCS0                             00000000
 ADCS1                             00000001
 ADCS2                             00000002
-ADC_Read                          00000000
 ADC_Setup                         00000000
 ADDEN                             00000003
 ADDEN1                            00000003
@@ -313,13 +312,13 @@ ADMSK3                            00000003
 ADMSK4                            00000004
 ADMSK5                            00000005
 ADON                              00000000
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  7
+ADRES                             00000FC3
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  7
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ADRES                             00000FC3
 ADRESH                            00000FC4
 ADRESL                            00000FC3
 ALE                               00000000
@@ -372,13 +371,13 @@ ANSEL14                           00000006
 ANSEL15                           00000007
 ANSEL16                           00000000
 ANSEL17                           00000001
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  8
+ANSEL18                           00000002
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  8
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ANSEL18                           00000002
 ANSEL19                           00000003
 ANSEL2                            00000002
 ANSEL20                           00000004
@@ -431,13 +430,13 @@ C1INC                             00000006
 C1OUT                             00000002
 C1TSEL0                           00000000
 C1TSEL1                           00000001
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE  9
+C1TSEL2                           00000002
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE  9
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-C1TSEL2                           00000002
 C2INA                             00000004
 C2INB                             00000003
 C2INC                             00000004
@@ -490,13 +489,13 @@ CCP1IE                            00000001
 CCP1IF                            00000001
 CCP1IP                            00000001
 CCP1M0                            00000000
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 10
+CCP1M1                            00000001
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 10
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP1M1                            00000001
 CCP1M2                            00000002
 CCP1M3                            00000003
 CCP1MD                            00000005
@@ -549,13 +548,13 @@ CCP5IF                            00000002
 CCP5IP                            00000002
 CCP5M0                            00000000
 CCP5M1                            00000001
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 11
+CCP5M2                            00000002
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 11
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP5M2                            00000002
 CCP5M3                            00000003
 CCP5MD                            00000002
 CCP5OD                            00000002
@@ -608,13 +607,13 @@ CCP9IE                            00000006
 CCP9IF                            00000006
 CCP9IP                            00000006
 CCP9M0                            00000000
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 12
+CCP9M1                            00000001
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 12
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP9M1                            00000001
 CCP9M2                            00000002
 CCP9M3                            00000003
 CCP9MD                            00000006
@@ -667,13 +666,13 @@ CHS4                              00000006
 CHSN0                             00000000
 CHSN1                             00000001
 CHSN2                             00000002
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 13
+CK1                               00000006
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CK1                               00000006
 CK2                               00000001
 CKE                               00000006
 CKP                               00000004
@@ -726,13 +725,13 @@ CTMUI                             00000003
 CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 14
+CTMUIP                            00000003
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CTMUIP                            00000003
 CTMUMD                            00000006
 CTMUSIDL                          00000005
 CTPLS                             00000000
@@ -785,13 +784,13 @@ ECCP1AS                           00000FBF
 ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 15
+ECCP1ASE                          00000007
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ECCP1ASE                          00000007
 ECCP1CON                          00000FBB
 ECCP1DEL                          00000FBE
 ECCP2AS                           00000F52
@@ -844,13 +843,13 @@ FSR1L                             00000FE1
 FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 16
+GCEN                              00000007
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-GCEN                              00000007
 GIE                               00000007
 GIEH                              00000007
 GIEL                              00000006
@@ -903,13 +902,13 @@ INT2P                             00000007
 INT3                              00000003
 INT3E                             00000005
 INT3F                             00000002
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 17
+INT3IE                            00000005
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-INT3IE                            00000005
 INT3IF                            00000002
 INT3IP                            00000001
 INT3P                             00000001
@@ -962,13 +961,13 @@ LATB4                             00000004
 LATB5                             00000005
 LATB6                             00000006
 LATB7                             00000007
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 18
+LATC                              00000F8B
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATC                              00000F8B
 LATC0                             00000000
 LATC1                             00000001
 LATC2                             00000002
@@ -1021,13 +1020,13 @@ LATH7                             00000007
 LATJ                              00000F91
 LATJ0                             00000000
 LATJ1                             00000001
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 19
+LATJ2                             00000002
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATJ2                             00000002
 LATJ3                             00000003
 LATJ4                             00000004
 LATJ5                             00000005
@@ -1080,13 +1079,13 @@ NOT_WR                            00000001
 NOT_WRITE                         00000002
 OBF                               00000006
 ODCON1                            00000F29
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 20
+ODCON2                            00000F28
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ODCON2                            00000F28
 ODCON3                            00000F27
 OE                                00000001
 OERR                              00000001
@@ -1139,13 +1138,13 @@ P3DC2                             00000002
 P3DC3                             00000003
 P3DC4                             00000004
 P3DC5                             00000005
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 21
+P3DC6                             00000006
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-P3DC6                             00000006
 P3M0                              00000006
 P3M1                              00000007
 P3RSEN                            00000007
@@ -1198,13 +1197,13 @@ PORTF                             00000F85
 PORTG                             00000F86
 PORTH                             00000F87
 PORTJ                             00000F88
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 22
+POSTDEC0                          00000FED
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-POSTDEC0                          00000FED
 POSTDEC1                          00000FE5
 POSTDEC2                          00000FDD
 POSTINC0                          00000FEE
@@ -1257,13 +1256,13 @@ PWM2CON                           00000F51
 R                                 00000002
 RA0                               00000000
 RA1                               00000001
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 23
+RA2                               00000002
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RA2                               00000002
 RA3                               00000003
 RA4                               00000004
 RA5                               00000005
@@ -1316,13 +1315,13 @@ RD1                               00000001
 RD16                              00000001
 RD2                               00000002
 RD3                               00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 24
+RD4                               00000004
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RD4                               00000004
 RD5                               00000005
 RD6                               00000006
 RD7                               00000007
@@ -1375,13 +1374,13 @@ RODIV0                            00000000
 RODIV1                            00000001
 RODIV2                            00000002
 RODIV3                            00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 25
+ROON                              00000007
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ROON                              00000007
 ROSEL                             00000004
 ROSSLP                            00000005
 RSEN                              00000001
@@ -1414,6 +1413,9 @@ RX9D2                             00000000
 RXDTP                             00000005
 R_NOT_W                           00000002
 R_W                               00000002
+Read_x                            00000000
+Read_y                            00000000
+Read_z                            00000000
 S                                 00000003
 SBOREN                            00000006
 SCK1                              00000003
@@ -1432,14 +1434,14 @@ SDO2                              00000004
 SEN                               00000000
 SENDB                             00000003
 SENDB1                            00000003
-SENDB2                            00000003
-SMP                               00000007
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 26
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SENDB2                            00000003
+SMP                               00000007
 SOSCEN                            00000003
 SOSCGO                            00000003
 SOSCI                             00000001
@@ -1491,14 +1493,14 @@ SSPCON1                           00000FC6
 SSPCON2                           00000FC5
 SSPEN                             00000005
 SSPIE                             00000003
-SSPIF                             00000003
-SSPIP                             00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 27
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPIF                             00000003
+SSPIP                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
 SSPM2                             00000002
@@ -1550,14 +1552,14 @@ T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000FCD
 T1G                               00000005
-T1GCON                            00000FAA
-T1GGO                             00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 28
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GCON                            00000FAA
+T1GGO                             00000003
 T1GGO_NOT_T1DONE                  00000003
 T1GPOL                            00000006
 T1GSPM                            00000004
@@ -1609,14 +1611,14 @@ T5GTM                             00000005
 T5GVAL                            00000002
 T6CKPS0                           00000000
 T6CKPS1                           00000001
-T6CON                             00000F39
-T6OUTPS0                          00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 29
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T6CON                             00000F39
+T6OUTPS0                          00000003
 T6OUTPS1                          00000004
 T6OUTPS2                          00000005
 T6OUTPS3                          00000006
@@ -1668,14 +1670,14 @@ TMR12IP                           00000006
 TMR12MD                           00000000
 TMR12ON                           00000002
 TMR1CS0                           00000006
-TMR1CS1                           00000007
-TMR1GE                            00000007
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 30
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1CS1                           00000007
+TMR1GE                            00000007
 TMR1GIE                           00000002
 TMR1GIF                           00000002
 TMR1GIP                           00000002
@@ -1727,14 +1729,14 @@ TMR5L                             00000F7C
 TMR5MD                            00000003
 TMR5ON                            00000000
 TMR6                              00000F3B
-TMR6IE                            00000002
-TMR6IF                            00000002
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 31
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR6IE                            00000002
+TMR6IF                            00000002
 TMR6IP                            00000002
 TMR6MD                            00000004
 TMR6ON                            00000002
@@ -1786,14 +1788,14 @@ TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
 TRISC1                            00000001
-TRISC2                            00000002
-TRISC3                            00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 32
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC2                            00000002
+TRISC3                            00000003
 TRISC4                            00000004
 TRISC5                            00000005
 TRISC6                            00000006
@@ -1845,14 +1847,14 @@ TRISJ1                            00000001
 TRISJ2                            00000002
 TRISJ3                            00000003
 TRISJ4                            00000004
-TRISJ5                            00000005
-TRISJ6                            00000006
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 33
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISJ5                            00000005
+TRISJ6                            00000006
 TRISJ7                            00000007
 TRMT                              00000001
 TRMT1                             00000001
@@ -1904,14 +1906,14 @@ ULPSINK                           00000001
 ULPWU                             00000000
 VCFG0                             00000004
 VCFG1                             00000005
-VDIRMAG                           00000007
-VNCFG                             00000003
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 34
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VDIRMAG                           00000007
+VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
 W                                 00000000
@@ -1963,14 +1965,14 @@ _CONFIG5L                         00300008
 _CONFIG6H                         0030000B
 _CONFIG6L                         0030000A
 _CONFIG7H                         0030000D
-_CONFIG7L                         0030000C
-_CP0_OFF_5L                       000000FF
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 35
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CONFIG7L                         0030000C
+_CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
 _CP1_OFF_5L                       000000FF
 _CP1_ON_5L                        000000FD
@@ -2022,14 +2024,14 @@ _FOSC_EC1IO_1H                    000000FC
 _FOSC_EC1_1H                      000000FD
 _FOSC_EC2IO_1H                    000000FA
 _FOSC_EC2_1H                      000000FB
-_FOSC_EC3IO_1H                    000000F4
-_FOSC_EC3_1H                      000000F5
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 36
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_EC3IO_1H                    000000F4
+_FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
 _FOSC_HS2_1H                      000000F2
 _FOSC_INTIO1_1H                   000000F9
@@ -2081,14 +2083,14 @@ _WDTPS_16384_2H                   000000BB
 _WDTPS_16_2H                      00000093
 _WDTPS_1_2H                       00000083
 _WDTPS_2048_2H                    000000AF
-_WDTPS_256_2H                     000000A3
-_WDTPS_262144_2H                  000000CB
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 37
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 37
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_256_2H                     000000A3
+_WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
 _WDTPS_32768_2H                   000000BF
 _WDTPS_32_2H                      00000097
@@ -2140,14 +2142,14 @@ multiplicationlow2                00000005
 multiply16by16                    000000B6
 multiply8by16                     000000F8
 multiply8by24                     00000088
-result1high                       0000000B
-result1low                        00000009
-MPASM 5.81                HEX_TO_DECIMAL.ASM   11-9-2018  11:08:51         PAGE 38
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-12-2018  11:12:21         PAGE 38
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+result1high                       0000000B
+result1low                        00000009
 result1middle                     0000000A
 result2high                       0000000E
 result2low                        0000000C
