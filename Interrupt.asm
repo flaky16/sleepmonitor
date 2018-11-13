@@ -66,6 +66,8 @@ start
     movwf   TRISE
     movlw   0x00
     movwf   TRISF
+    movlw   0x00
+    movwf   PORTF
 
 loop
     
@@ -92,32 +94,20 @@ rd00
     
 loop1sec0
     call    Read_x		    ; Get 8-bit number for x current
-    movff   ADRESL , PORTF
-    ;movff   ADRESL , PORTF
-    
-    movff   x_0 , W
-    subwf   ADRESL
+   
+    movf    x_0 , W		    
+    subwf   ADRESL , 1
     btfsc   STATUS , OV		    ; Skip if no overflow
     call    overflow_correction     ; If overlow accurs
     
     movff   ADRESL , x_t	    ; The difference is stored
+    movff   x_t , PORTF
     
-    movff   x_t , x_max
+    movf   x_t , W
     cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
     movff   x_t , x_max		    ; Update x_max for this 1 sec interval
     
-    
-;    movff   x_0_H , W
-;    subwf   ADRESH
-;   
-;    movff   x_0_L  , W	    
-;    subwf   ADRESL		; Take difference with initial Vx
-;    movff   ADRESL , x_t_L	 ; store difference
-;    movff   x_t_L , W
-;    
-;    cpfsgt  x_max_L		 ; Compare if current difference is higher than the max differennce
-;    movff   x_t_L , x_max_L	; Update x_max for this 1 sec interval
-;    
+   
     movlw 0x04
     movwf PORTE
     movlw 0x02
@@ -128,13 +118,12 @@ loop1sec0
     bra loop1sec0
     
     
-    
     return
     
  overflow_correction
     movlw   0xFF
-    subwf   ADRESL
-    incf    ADRESL
+    subwf   ADRESL , 1
+    incf    ADRESL , 1
     return
     
  rd01
@@ -148,7 +137,7 @@ loop1sec0
     movlw 0x08
     subwf PORTE
     
-    movff   PORTE , PORTF
+    ;movff   PORTE , PORTF
     
     btfsc   PORTD, RD0
     bra loop1sec1
@@ -170,8 +159,21 @@ initialize_1second
 ;    movff   ADRESH , z_0_H
 ;    movff   ADRESL , z_0_L
     
+
     return
     
+        
+    ;    movff   x_0_H , W
+;    subwf   ADRESH
+;   
+;    movff   x_0_L  , W	    
+;    subwf   ADRESL		; Take difference with initial Vx
+;    movff   ADRESL , x_t_L	 ; store difference
+;    movff   x_t_L , W
+;    
+;    cpfsgt  x_max_L		 ; Compare if current difference is higher than the max differennce
+;    movff   x_t_L , x_max_L	; Update x_max for this 1 sec interval
+;    
     
     end
 
