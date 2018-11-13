@@ -1,10 +1,13 @@
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  1
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00001 #include p18f87k22.inc
+                      00001 
+                      00002 
+                      00003 
+                      00004 #include p18f87k22.inc
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
@@ -15,135 +18,42 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00002 
-  0000                00003     global  ADC_Setup, Read_x,Read_y , Read_z
-                      00004     
-                      00005 acs0    udata_acs   ; reserve data space in access ram
-000000                00006 count  res 1
-000001                00007 carry  res 4
-                      00008   
-                      00009 ADC    code
-                      00010     
-000000                00011 ADC_Setup
+                      00005 
+  0000                00006     global  UART_Setup, UART_Transmit_Message
+                      00007 
+                      00008 acs0    udata_acs           ; named variables in access ram
+000000                00009 UART_counter res 1          ; reserve 1 byte for variable UART_counter
+                      00010 
+                      00011 UART    code
                       00012     
-000000 8092           00013     bsf     TRISA,RA0       ; use pin A0(==AN0) for input
-000002 8125           00014     bsf     ANCON0,ANSEL0   ; set A0 to analog
-                      00015     
-000004 8292           00016     bsf     TRISA,RA1       ; use pin A0(==AN0) for input
-000006 8325           00017     bsf     ANCON0,ANSEL1   ; set A1 to analog
-                      00018     
-000008 8492           00019     bsf     TRISA,RA2       ; use pin A0(==AN0) for input
-00000A 8525           00020     bsf     ANCON0,ANSEL2   ; set A2 to analog    
-                      00021   
-00000C 0E20           00022     movlw   0x20            ; Select 4.096V positive reference
-00000E 6EC1           00023     movwf   ADCON1          ; 0V for -ve reference and -ve input
-000010 0EF6           00024     movlw   0xF6            ; Right justified output
-000012 6EC0           00025     movwf   ADCON2          ; Fosc/64 clock and acquisition times
-000014 0012           00026     return
-                      00027 
-000016                00028 Read_x
-000016 0E01           00029     movlw   0x01            ; select AN0 for measurement
-000018 6EC2           00030     movwf   ADCON0          ; and turn ADC on
-                      00031     
-00001A 82C2           00032     bsf     ADCON0,GO       ; Start conversion
-00001C EC?? F???      00033     call    adc_loop
-000020 0012           00034     return
-                      00035 
-000022                00036 Read_y
-000022 0E05           00037     movlw   0x05            ; select AN1 for measurement
-000024 6EC2           00038     movwf   ADCON0          ; and turn ADC on
-                      00039     
-000026 82C2           00040     bsf     ADCON0,GO       ; Start conversion
-000028 EC?? F???      00041     call    adc_loop
-00002C 0012           00042     return
-00002E                00043 Read_z
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  2
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-00002E 0E09           00044     movlw   0x09            ; select AN2 for measurement
-000030 6EC2           00045     movwf   ADCON0          ; and turn ADC on
-                      00046     
-000032 82C2           00047     bsf     ADCON0,GO       ; Start conversion
-000034 EC?? F???      00048     call    adc_loop
-000038 0012           00049     return
-                      00050     
-00003A                00051 adc_loop
-00003A B2C2           00052     btfsc   ADCON0,GO       ; check to see if finished
-00003C D???           00053     bra     adc_loop
-00003E EC?? F???      00054     call    reduce
-000042 0012           00055     return
-                      00056 
-000044                00057 reduce                      ; Read data in 12-bits, reduces to 8-bits in ADRESL
-000044 0E04           00058     movlw   0x04
-000046 6E??           00059     movwf   count
-                      00060     
-000048 EE?? F0??      00061     lfsr    FSR0, carry     ; carry adressed stored here
-                      00062     
-00004C 0E07           00063     movlw   0x07
-00004E 64C4           00064     cpfsgt  ADRESH          ; skip if High > 7
-000050 EC?? F???      00065     call    updatecarry0
-000054 0E08           00066     movlw   0x08
-000056 60C4           00067     cpfslt  ADRESH                  ; skip if High < 8
-000058 EC?? F???      00068     call    updatecarry1            ; Carry = 1 , High = High - 8
-                      00069     
-00005C 0E03           00070     movlw   0x03
-00005E 64C4           00071     cpfsgt  ADRESH          ; skip if High > 3
-000060 EC?? F???      00072     call    updatecarry0
-000064 0E04           00073     movlw   0x04
-000066 60C4           00074     cpfslt  ADRESH                  ; skip if High < 4
-000068 EC?? F???      00075     call    updatecarry1            ; Carry = 1 , High = High - 4
-                      00076     
-00006C 0E01           00077     movlw  0x01
-00006E 64C4           00078     cpfsgt  ADRESH          ; skip if High > 1
-000070 EC?? F???      00079     call    updatecarry0
-000074 0E02           00080     movlw   0x02
-000076 60C4           00081     cpfslt  ADRESH                  ; skip if High < 2
-000078 EC?? F???      00082     call    updatecarry1            ; Carry = 1 , High = High - 2
-                      00083     
-00007C 0E00           00084     movlw  0x00
-00007E 64C4           00085     cpfsgt  ADRESH          ; skip if High > 0
-000080 EC?? F???      00086     call    updatecarry0
-000084 0E01           00087     movlw   0x01
-000086 60C4           00088     cpfslt  ADRESH                  ; skip if High < 1
-000088 EC?? F???      00089     call    updatecarry1            ; Carry = 1 , High = High - 1
-00008C 52ED           00090     movf    POSTDEC0                ; Decrement FSR0 so the location of carry 3 is maintained
-Warning[207]: Found label after column 1. (loop4times)
-00008E                00091  loop4times                         
-00008E CFED FFF5      00092     movff   POSTDEC0 , TABLAT
-000092 90D8           00093     bcf     STATUS, C               ; Clear carry
-000094 0E00           00094     movlw   0x00
-000096 62F5           00095     cpfseq  TABLAT                  ; Skip if tablat zero
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  3
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-000098 80D8           00096     bsf     STATUS, C               ; Set carry if tablat != 0
-                      00097     
-00009A 32C3           00098     rrcf    ADRESL , 1              ; Rotate right with carry
-00009C 2E??           00099     decfsz  count
-00009E D???           00100     bra     loop4times
-                      00101     
-0000A0 0012           00102     return              ; Return the new 8 bit measurement in ADRESL
-                      00103     
-0000A2                00104 updatecarry0   
-0000A2 0E00           00105     movlw   0x00
-0000A4 6EEE           00106     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000A6 0012           00107     return
-                      00108     
-Warning[207]: Found label after column 1. (updatecarry1)
-0000A8                00109  updatecarry1           ; Subtraction stored in W
-0000A8 5EC4           00110     subwf   ADRESH      ; Subtract W from high
-0000AA 0E01           00111     movlw   0x01
-0000AC 6EEE           00112     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000AE 0012           00113     return         
-                      00114     
-                      00115     end
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  4
+000000                00013 UART_Setup
+000000 8EAB           00014     bsf     RCSTA1, SPEN    ; enable
+000002 98AC           00015     bcf     TXSTA1, SYNC    ; synchronous
+000004 94AC           00016     bcf     TXSTA1, BRGH    ; slow speed
+000006 8AAC           00017     bsf     TXSTA1, TXEN    ; enable transmit
+000008 9665           00018     bcf     BAUDCON1, BRG16 ; 8-bit generator only
+00000A 0E67           00019     movlw   .103            ; gives 9600 Baud rate (actually 9615)
+00000C 6EAF           00020     movwf   SPBRG1
+00000E 8C94           00021     bsf     TRISC, TX1      ; TX1 pin as output
+000010 0012           00022     return
+                      00023 
+000012                00024 UART_Transmit_Message       ; Message stored at FSR2, length stored in W
+000012 6E??           00025     movwf   UART_counter
+000014                00026 UART_Loop_message
+000014 50DE           00027     movf    POSTINC2, W
+000016 EC?? F???      00028     call    UART_Transmit_Byte
+00001A 2E??           00029     decfsz  UART_counter
+00001C D???           00030     bra     UART_Loop_message
+00001E 0012           00031     return
+                      00032 
+000020                00033 UART_Transmit_Byte          ; Transmits byte stored in W
+000020 A89E           00034     btfss   PIR1,TX1IF      ; TX1IF is set when TXREG1 is empty
+000022 D???           00035     bra     UART_Transmit_Byte
+000024 6EAD           00036     movwf   TXREG1
+000026 0012           00037     return
+                      00038 
+                      00039     end
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  2
 
 
 SYMBOL TABLE
@@ -186,7 +96,6 @@ ADCON2                            00000FC0
 ADCS0                             00000000
 ADCS1                             00000001
 ADCS2                             00000002
-ADC_Setup                         00000000
 ADDEN                             00000003
 ADDEN1                            00000003
 ADDEN2                            00000003
@@ -202,13 +111,13 @@ ADMSK4                            00000004
 ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  5
+ADRESH                            00000FC4
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  3
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ADRESH                            00000FC4
 ADRESL                            00000FC3
 ALE                               00000000
 ALRMCFG                           00000F5B
@@ -261,13 +170,13 @@ ANSEL15                           00000007
 ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  6
+ANSEL19                           00000003
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  4
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ANSEL19                           00000003
 ANSEL2                            00000002
 ANSEL20                           00000004
 ANSEL21                           00000005
@@ -320,13 +229,13 @@ C1OUT                             00000002
 C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  7
+C2INA                             00000004
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  5
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-C2INA                             00000004
 C2INB                             00000003
 C2INC                             00000004
 C2IND                             00000005
@@ -379,13 +288,13 @@ CCP1IF                            00000001
 CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  8
+CCP1M2                            00000002
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  6
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP1M2                            00000002
 CCP1M3                            00000003
 CCP1MD                            00000005
 CCP1OD                            00000005
@@ -438,13 +347,13 @@ CCP5IP                            00000002
 CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  9
+CCP5M3                            00000003
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  7
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP5M3                            00000003
 CCP5MD                            00000002
 CCP5OD                            00000002
 CCP5X                             00000005
@@ -497,13 +406,13 @@ CCP9IF                            00000006
 CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 10
+CCP9M2                            00000002
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  8
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CCP9M2                            00000002
 CCP9M3                            00000003
 CCP9MD                            00000006
 CCP9OD                            00000006
@@ -556,13 +465,13 @@ CHSN0                             00000000
 CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 11
+CK2                               00000001
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE  9
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CK2                               00000001
 CKE                               00000006
 CKP                               00000004
 CLKI                              00000007
@@ -615,13 +524,13 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 12
+CTMUMD                            00000006
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 10
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-CTMUMD                            00000006
 CTMUSIDL                          00000005
 CTPLS                             00000000
 CTTRIG                            00000000
@@ -674,13 +583,13 @@ ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 13
+ECCP1CON                          00000FBB
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 11
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-ECCP1CON                          00000FBB
 ECCP1DEL                          00000FBE
 ECCP2AS                           00000F52
 ECCP2AS0                          00000004
@@ -733,13 +642,13 @@ FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 14
+GIE                               00000007
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 12
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-GIE                               00000007
 GIEH                              00000007
 GIEL                              00000006
 GIE_GIEH                          00000007
@@ -792,13 +701,13 @@ INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 15
+INT3IP                            00000001
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-INT3IP                            00000001
 INT3P                             00000001
 INTCON                            00000FF2
 INTCON2                           00000FF1
@@ -851,13 +760,13 @@ LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 16
+LATC1                             00000001
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATC1                             00000001
 LATC2                             00000002
 LATC3                             00000003
 LATC4                             00000004
@@ -910,13 +819,13 @@ LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 17
+LATJ4                             00000004
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LATJ4                             00000004
 LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
@@ -969,13 +878,13 @@ ODCON3                            00000F27
 OE                                00000001
 OERR                              00000001
 OERR1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 18
+OERR2                             00000001
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
 OSCCON                            00000FD3
@@ -1028,13 +937,13 @@ P3M0                              00000006
 P3M1                              00000007
 P3RSEN                            00000007
 PA3                               00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 19
+PADCFG1                           00000F53
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
 PC                                00000FF9
@@ -1087,13 +996,13 @@ POSTDEC1                          00000FE5
 POSTDEC2                          00000FDD
 POSTINC0                          00000FEE
 POSTINC1                          00000FE6
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 20
+POSTINC2                          00000FDE
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
 PR2                               00000FCB
@@ -1146,13 +1055,13 @@ RA3                               00000003
 RA4                               00000004
 RA5                               00000005
 RA6                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 21
+RA7                               00000007
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RA7                               00000007
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1205,13 +1114,13 @@ RD5                               00000005
 RD6                               00000006
 RD7                               00000007
 RDPU                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 22
+RE0                               00000000
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
@@ -1264,13 +1173,13 @@ ROSEL                             00000004
 ROSSLP                            00000005
 RSEN                              00000001
 RTCC                              00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 23
+RTCCAL                            00000F5E
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
 RTCCIF                            00000000
@@ -1298,9 +1207,6 @@ RX9D2                             00000000
 RXDTP                             00000005
 R_NOT_W                           00000002
 R_W                               00000002
-Read_x                            00000016
-Read_y                            00000022
-Read_z                            0000002E
 S                                 00000003
 SBOREN                            00000006
 SCK1                              00000003
@@ -1323,16 +1229,16 @@ SENDB2                            00000003
 SMP                               00000007
 SOSCEN                            00000003
 SOSCGO                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 24
+SOSCI                             00000001
+SOSCO                             00000000
+SOSCRUN                           00000006
+SP0                               00000000
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SOSCI                             00000001
-SOSCO                             00000000
-SOSCRUN                           00000006
-SP0                               00000000
 SP1                               00000001
 SP2                               00000002
 SP3                               00000003
@@ -1382,16 +1288,16 @@ SSPIF                             00000003
 SSPIP                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 25
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000FC7
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SSPM2                             00000002
-SSPM3                             00000003
-SSPOV                             00000006
-SSPSTAT                           00000FC7
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
@@ -1441,16 +1347,16 @@ T1GCON                            00000FAA
 T1GGO                             00000003
 T1GGO_NOT_T1DONE                  00000003
 T1GPOL                            00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 26
+T1GSPM                            00000004
+T1GSS0                            00000000
+T1GSS1                            00000001
+T1GTM                             00000005
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T1GSPM                            00000004
-T1GSS0                            00000000
-T1GSS1                            00000001
-T1GTM                             00000005
 T1GVAL                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
@@ -1500,16 +1406,16 @@ T6CON                             00000F39
 T6OUTPS0                          00000003
 T6OUTPS1                          00000004
 T6OUTPS2                          00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 27
+T6OUTPS3                          00000006
+T7CKI                             00000004
+T7CKPS0                           00000004
+T7CKPS1                           00000005
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T6OUTPS3                          00000006
-T7CKI                             00000004
-T7CKPS0                           00000004
-T7CKPS1                           00000005
 T7CON                             00000F3D
 T7G                               00000001
 T7GCON                            00000F3C
@@ -1559,16 +1465,16 @@ TMR1CS1                           00000007
 TMR1GE                            00000007
 TMR1GIE                           00000002
 TMR1GIF                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 28
+TMR1GIP                           00000002
+TMR1H                             00000FCF
+TMR1IE                            00000000
+TMR1IF                            00000000
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TMR1GIP                           00000002
-TMR1H                             00000FCF
-TMR1IE                            00000000
-TMR1IF                            00000000
 TMR1IP                            00000000
 TMR1L                             00000FCE
 TMR1MD                            00000001
@@ -1618,16 +1524,16 @@ TMR6IE                            00000002
 TMR6IF                            00000002
 TMR6IP                            00000002
 TMR6MD                            00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 29
+TMR6ON                            00000002
+TMR7                              00000F3E
+TMR7CS0                           00000006
+TMR7CS1                           00000007
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TMR6ON                            00000002
-TMR7                              00000F3E
-TMR7CS0                           00000006
-TMR7CS1                           00000007
 TMR7GE                            00000007
 TMR7GIE                           00000007
 TMR7GIF                           00000007
@@ -1677,16 +1583,16 @@ TRISC2                            00000002
 TRISC3                            00000003
 TRISC4                            00000004
 TRISC5                            00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 30
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000F95
+TRISD0                            00000000
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TRISC6                            00000006
-TRISC7                            00000007
-TRISD                             00000F95
-TRISD0                            00000000
 TRISD1                            00000001
 TRISD2                            00000002
 TRISD3                            00000003
@@ -1736,16 +1642,16 @@ TRISJ5                            00000005
 TRISJ6                            00000006
 TRISJ7                            00000007
 TRMT                              00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 31
+TRMT1                             00000001
+TRMT2                             00000001
+TUN0                              00000000
+TUN1                              00000001
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TRMT1                             00000001
-TRMT2                             00000001
-TUN0                              00000000
-TUN1                              00000001
 TUN2                              00000002
 TUN3                              00000003
 TUN4                              00000004
@@ -1784,6 +1690,11 @@ U2OD                              00000007
 UA                                00000001
 UART1MD                           00000003
 UART2MD                           00000004
+UART_Loop_message                 00000014
+UART_Setup                        00000000
+UART_Transmit_Byte                00000020
+UART_Transmit_Message             00000012
+UART_counter                      00000000
 UB                                00000007
 ULPEN                             00000002
 ULPLVL                            00000005
@@ -1794,13 +1705,13 @@ VCFG1                             00000005
 VDIRMAG                           00000007
 VNCFG                             00000003
 VREF_MINUS                        00000002
-VREF_PLUS                         00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 32
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VREF_PLUS                         00000003
 W                                 00000000
 WAIT0                             00000004
 WAIT1                             00000005
@@ -1853,13 +1764,13 @@ _CONFIG7H                         0030000D
 _CONFIG7L                         0030000C
 _CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
-_CP1_OFF_5L                       000000FF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 33
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CP1_OFF_5L                       000000FF
 _CP1_ON_5L                        000000FD
 _CP2_OFF_5L                       000000FF
 _CP2_ON_5L                        000000FB
@@ -1912,13 +1823,13 @@ _FOSC_EC2_1H                      000000FB
 _FOSC_EC3IO_1H                    000000F4
 _FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
-_FOSC_HS2_1H                      000000F2
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 34
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_HS2_1H                      000000F2
 _FOSC_INTIO1_1H                   000000F9
 _FOSC_INTIO2_1H                   000000F8
 _FOSC_LP_1H                       000000F0
@@ -1971,13 +1882,13 @@ _WDTPS_2048_2H                    000000AF
 _WDTPS_256_2H                     000000A3
 _WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
-_WDTPS_32768_2H                   000000BF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 35
+MPASM 5.81                          UART.ASM   11-13-2018  12:57:29         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_32768_2H                   000000BF
 _WDTPS_32_2H                      00000097
 _WDTPS_4096_2H                    000000B3
 _WDTPS_4_2H                       0000008B
@@ -2012,16 +1923,11 @@ _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-adc_loop                          0000003A
-carry                             00000001
-count                             00000000
-loop4times                        0000008E
-reduce                            00000044
-updatecarry0                      000000A2
-updatecarry1                      000000A8
+__DEBUG                           
+__MPLAB_DEBUGGER_ICD3             1
 
 Errors   :     0
-Warnings :     2 reported,     0 suppressed
+Warnings :     0 reported,     0 suppressed
 Messages :     0 reported,     0 suppressed
 
 

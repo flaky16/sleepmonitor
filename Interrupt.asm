@@ -64,7 +64,7 @@ start
     bsf	    INTCON,GIE ; Enable all interrupts 
     movlw   0x00
     movwf   TRISE
-        movlw   0x00
+    movlw   0x00
     movwf   TRISF
 
 loop
@@ -92,10 +92,13 @@ rd00
     
 loop1sec0
     call    Read_x		    ; Get 8-bit number for x current
+    movff   ADRESL , PORTF
+    ;movff   ADRESL , PORTF
+    
     movff   x_0 , W
     subwf   ADRESL
-    btfsc   STATUS , OV
-    call    overflow_correction
+    btfsc   STATUS , OV		    ; Skip if no overflow
+    call    overflow_correction     ; If overlow accurs
     
     movff   ADRESL , x_t	    ; The difference is stored
     
@@ -124,7 +127,7 @@ loop1sec0
     btfss   PORTD, RD0
     bra loop1sec0
     
-    movff  x_max , PORTF
+    
     
     return
     
@@ -145,6 +148,7 @@ loop1sec0
     movlw 0x08
     subwf PORTE
     
+    movff   PORTE , PORTF
     
     btfsc   PORTD, RD0
     bra loop1sec1

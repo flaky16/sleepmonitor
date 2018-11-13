@@ -1,10 +1,12 @@
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  1
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00001 #include p18f87k22.inc
+                      00001 
+                      00002 
+                      00003         #include p18f87k22.inc
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
@@ -15,135 +17,203 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00002 
-  0000                00003     global  ADC_Setup, Read_x,Read_y , Read_z
-                      00004     
-                      00005 acs0    udata_acs   ; reserve data space in access ram
-000000                00006 count  res 1
-000001                00007 carry  res 4
-                      00008   
-                      00009 ADC    code
-                      00010     
-000000                00011 ADC_Setup
-                      00012     
-000000 8092           00013     bsf     TRISA,RA0       ; use pin A0(==AN0) for input
-000002 8125           00014     bsf     ANCON0,ANSEL0   ; set A0 to analog
-                      00015     
-000004 8292           00016     bsf     TRISA,RA1       ; use pin A0(==AN0) for input
-000006 8325           00017     bsf     ANCON0,ANSEL1   ; set A1 to analog
-                      00018     
-000008 8492           00019     bsf     TRISA,RA2       ; use pin A0(==AN0) for input
-00000A 8525           00020     bsf     ANCON0,ANSEL2   ; set A2 to analog    
-                      00021   
-00000C 0E20           00022     movlw   0x20            ; Select 4.096V positive reference
-00000E 6EC1           00023     movwf   ADCON1          ; 0V for -ve reference and -ve input
-000010 0EF6           00024     movlw   0xF6            ; Right justified output
-000012 6EC0           00025     movwf   ADCON2          ; Fosc/64 clock and acquisition times
-000014 0012           00026     return
-                      00027 
-000016                00028 Read_x
-000016 0E01           00029     movlw   0x01            ; select AN0 for measurement
-000018 6EC2           00030     movwf   ADCON0          ; and turn ADC on
-                      00031     
-00001A 82C2           00032     bsf     ADCON0,GO       ; Start conversion
-00001C EC?? F???      00033     call    adc_loop
-000020 0012           00034     return
-                      00035 
-000022                00036 Read_y
-000022 0E05           00037     movlw   0x05            ; select AN1 for measurement
-000024 6EC2           00038     movwf   ADCON0          ; and turn ADC on
-                      00039     
-000026 82C2           00040     bsf     ADCON0,GO       ; Start conversion
-000028 EC?? F???      00041     call    adc_loop
-00002C 0012           00042     return
-00002E                00043 Read_z
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  2
+                      00004 
+  0000                00005         extern  UART_Setup, UART_Transmit_Message   ; external UART subroutines
+  0000                00006         extern  LCD_Setup, LCD_Write_Message        ; external LCD subroutines
+  0000                00007         extern  LCD_Write_Hex                       ; external LCD subroutines
+  0000                00008         extern  ADC_Setup, Read_x,Read_y , Read_z                   ; external ADC routines
+  0000                00009         extern measure_loop , Hex_setup
+                      00010         
+                      00011 acs0    udata_acs       
+000000                00012 check1sec res 1
+                      00013 
+000001                00014 x_0     res 1
+000002                00015 y_0     res 1
+000003                00016 z_0_H   res 1
+000004                00017 z_0_L   res 1
+                      00018         
+                      00019 
+000005                00020 x_t     res 1
+                      00021 
+000006                00022 x_max   res 1
+                      00023 ;y_0_H  res 1
+                      00024 ;y_0_L  res 1
+                      00025 ;z_0_H  res 1
+                      00026 ;z_0_L  res 1
+                      00027         
+                      00028 tables  udata   0x400    ; reserve data anywhere in RAM (here at 0x400)
+000400                00029 myArray res 0x80    ; reserve 128 bytes for message data
+                      00030 
+                      00031 rst     code    0    ; reset vector
+000000 EF?? F???      00032         goto    setup
+                      00033 
+                      00034 pdata   code    ; a section of programme memory for storing data
+                      00035         ; ******* myTable, data in programme memory, and its length *****
+000000 6548 6C6C 206F 00036 myTable data        "Hello World!\n"    ; message, plus carriage return
+       6F57 6C72 2164 
+       000A 
+  0002                00037         constant    myTable_l=.2        ; length of data
+                      00038         
+                      00039 int_hi code 0x0008 ; high vector, no low vector 
+000008 A4F2           00040     btfss   INTCON,TMR0IF ; check that this is timer0 interrupt 
+00000A 0011           00041     retfie  FAST ; if not then return 
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00002E 0E09           00044     movlw   0x09            ; select AN2 for measurement
-000030 6EC2           00045     movwf   ADCON0          ; and turn ADC on
-                      00046     
-000032 82C2           00047     bsf     ADCON0,GO       ; Start conversion
-000034 EC?? F???      00048     call    adc_loop
-000038 0012           00049     return
-                      00050     
-00003A                00051 adc_loop
-00003A B2C2           00052     btfsc   ADCON0,GO       ; check to see if finished
-00003C D???           00053     bra     adc_loop
-00003E EC?? F???      00054     call    reduce
-000042 0012           00055     return
-                      00056 
-000044                00057 reduce                      ; Read data in 12-bits, reduces to 8-bits in ADRESL
-000044 0E04           00058     movlw   0x04
-000046 6E??           00059     movwf   count
-                      00060     
-000048 EE?? F0??      00061     lfsr    FSR0, carry     ; carry adressed stored here
-                      00062     
-00004C 0E07           00063     movlw   0x07
-00004E 64C4           00064     cpfsgt  ADRESH          ; skip if High > 7
-000050 EC?? F???      00065     call    updatecarry0
-000054 0E08           00066     movlw   0x08
-000056 60C4           00067     cpfslt  ADRESH                  ; skip if High < 8
-000058 EC?? F???      00068     call    updatecarry1            ; Carry = 1 , High = High - 8
-                      00069     
-00005C 0E03           00070     movlw   0x03
-00005E 64C4           00071     cpfsgt  ADRESH          ; skip if High > 3
-000060 EC?? F???      00072     call    updatecarry0
-000064 0E04           00073     movlw   0x04
-000066 60C4           00074     cpfslt  ADRESH                  ; skip if High < 4
-000068 EC?? F???      00075     call    updatecarry1            ; Carry = 1 , High = High - 4
-                      00076     
-00006C 0E01           00077     movlw  0x01
-00006E 64C4           00078     cpfsgt  ADRESH          ; skip if High > 1
-000070 EC?? F???      00079     call    updatecarry0
-000074 0E02           00080     movlw   0x02
-000076 60C4           00081     cpfslt  ADRESH                  ; skip if High < 2
-000078 EC?? F???      00082     call    updatecarry1            ; Carry = 1 , High = High - 2
+00000C 2A8C           00042     incf    LATD ; increment PORTD
+00000E 94F2           00043     bcf     INTCON,TMR0IF ; clear interrupt flag 
+000010 0011           00044     retfie  FAST ; fast return from interrupt
+                      00045     
+                      00046 main    code
+                      00047         
+                      00048         ; ******* Programme FLASH read Setup Code ***********************
+000000 9C7F           00049 setup   bcf     EECON1, CFGS    ; point to Flash program memory  
+000002 8E7F           00050         bsf     EECON1, EEPGD   ; access Flash program memory
+000004 EC?? F???      00051         call    UART_Setup      ; setup UART
+000008 EC?? F???      00052         call    LCD_Setup       ; setup LCD
+00000C EC?? F???      00053         call    ADC_Setup       ; setup ADC
+000010 EC?? F???      00054         call    Hex_setup
+000014 EF?? F???      00055         goto    start
+                      00056         
+                      00057         ; ******* Main programme ****************************************
+000018                00058 start   
+000018 6A95           00059         clrf    TRISD ; Set PORTD as all outputs 
+00001A 6A8C           00060     clrf    LATD ; Clear PORTD outputs 
+00001C 0E87           00061     movlw   b'10000111' ; Set timer0 to 16-bit, Fosc/4/256 
+00001E 6ED5           00062     movwf   T0CON ; = 62.5KHz clock rate, approx 1sec rollover 
+000020 8AF2           00063     bsf     INTCON,TMR0IE ; Enable timer0 interrupt 
+000022 8EF2           00064     bsf     INTCON,GIE ; Enable all interrupts 
+000024 0E00           00065     movlw   0x00
+000026 6E96           00066     movwf   TRISE
+000028 0E00           00067     movlw   0x00
+00002A 6E97           00068     movwf   TRISF
+                      00069 
+00002C                00070 loop
+                      00071     
+00002C EC?? F???      00072     call    initialize_1second
+                      00073     
+                      00074 
+                      00075     
+000030 A083           00076     btfss   PORTD, RD0          ; Skip if RD0 is high (count)
+000032 EC?? F???      00077     call    rd00
+                      00078     
+                      00079     
+000036 EC?? F???      00080     call    initialize_1second  ; Set V0, Vmax = 0 
+                      00081     
+                      00082     
                       00083     
-00007C 0E00           00084     movlw  0x00
-00007E 64C4           00085     cpfsgt  ADRESH          ; skip if High > 0
-000080 EC?? F???      00086     call    updatecarry0
-000084 0E01           00087     movlw   0x01
-000086 60C4           00088     cpfslt  ADRESH                  ; skip if High < 1
-000088 EC?? F???      00089     call    updatecarry1            ; Carry = 1 , High = High - 1
-00008C 52ED           00090     movf    POSTDEC0                ; Decrement FSR0 so the location of carry 3 is maintained
-Warning[207]: Found label after column 1. (loop4times)
-00008E                00091  loop4times                         
-00008E CFED FFF5      00092     movff   POSTDEC0 , TABLAT
-000092 90D8           00093     bcf     STATUS, C               ; Clear carry
-000094 0E00           00094     movlw   0x00
-000096 62F5           00095     cpfseq  TABLAT                  ; Skip if tablat zero
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  3
+00003A B083           00084     btfsc   PORTD, RD0          ; Skip if RD0 is low (count)
+00003C EC?? F???      00085     call    rd01
+                      00086 
+000040 D???           00087     bra loop
+                      00088 
+                      00089     
+000042                00090 rd00
+000042 EC?? F???      00091     call measure_loop
+                      00092     
+000046                00093 loop1sec0
+000046 EC?? F???      00094     call    Read_x                  ; Get 8-bit number for x current
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000098 80D8           00096     bsf     STATUS, C               ; Set carry if tablat != 0
+                      00095     
+                      00096     ;movff   ADRESL , PORTF
                       00097     
-00009A 32C3           00098     rrcf    ADRESL , 1              ; Rotate right with carry
-00009C 2E??           00099     decfsz  count
-00009E D???           00100     bra     loop4times
-                      00101     
-0000A0 0012           00102     return              ; Return the new 8 bit measurement in ADRESL
-                      00103     
-0000A2                00104 updatecarry0   
-0000A2 0E00           00105     movlw   0x00
-0000A4 6EEE           00106     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000A6 0012           00107     return
+00004A C??? F000      00098     movff   x_0 , W
+00004E 5EC3           00099     subwf   ADRESL
+000050 B6D8           00100     btfsc   STATUS , OV             ; Skip if no overflow
+000052 EC?? F???      00101     call    overflow_correction     ; If overlow accurs
+                      00102     
+000056 CFC3 F???      00103     movff   ADRESL , x_t            ; The difference is stored
+                      00104     
+00005A C??? F???      00105     movff   x_t , x_max
+00005E 64??           00106     cpfsgt  x_max                   ; Compare if current difference is higher than the max differennce
+000060 C??? F???      00107     movff   x_t , x_max             ; Update x_max for this 1 sec interval
                       00108     
-Warning[207]: Found label after column 1. (updatecarry1)
-0000A8                00109  updatecarry1           ; Subtraction stored in W
-0000A8 5EC4           00110     subwf   ADRESH      ; Subtract W from high
-0000AA 0E01           00111     movlw   0x01
-0000AC 6EEE           00112     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000AE 0012           00113     return         
-                      00114     
-                      00115     end
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  4
+                      00109     
+                      00110 ;    movff   x_0_H , W
+                      00111 ;    subwf   ADRESH
+                      00112 ;   
+                      00113 ;    movff   x_0_L  , W     
+                      00114 ;    subwf   ADRESL             ; Take difference with initial Vx
+                      00115 ;    movff   ADRESL , x_t_L      ; store difference
+                      00116 ;    movff   x_t_L , W
+                      00117 ;    
+                      00118 ;    cpfsgt  x_max_L             ; Compare if current difference is higher than the max differennce
+                      00119 ;    movff   x_t_L , x_max_L    ; Update x_max for this 1 sec interval
+                      00120 ;    
+000064 0E04           00121     movlw 0x04
+000066 6E84           00122     movwf PORTE
+000068 0E02           00123     movlw 0x02
+00006A 5E84           00124     subwf PORTE
+                      00125     
+                      00126     
+00006C A083           00127     btfss   PORTD, RD0
+00006E D???           00128     bra loop1sec0
+                      00129     
+                      00130     
+                      00131     
+000070 0012           00132     return
+                      00133     
+Warning[207]: Found label after column 1. (overflow_correction)
+000072                00134  overflow_correction
+000072 0EFF           00135     movlw   0xFF
+000074 5EC3           00136     subwf   ADRESL
+000076 2AC3           00137     incf    ADRESL
+000078 0012           00138     return
+                      00139     
+Warning[207]: Found label after column 1. (rd01)
+00007A                00140  rd01
+                      00141  
+00007A EC?? F???      00142     call measure_loop
+                      00143     
+Warning[207]: Found label after column 1. (loop1sec1)
+00007E                00144  loop1sec1
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00145  
+00007E 0E05           00146     movlw 0x05
+000080 6E84           00147     movwf PORTE
+000082 0E08           00148     movlw 0x08
+000084 5E84           00149     subwf PORTE
+                      00150     
+000086 CF84 FF85      00151     movff   PORTE , PORTF
+                      00152     
+00008A B083           00153     btfsc   PORTD, RD0
+00008C D???           00154     bra loop1sec1
+                      00155     
+00008E 0012           00156     return
+                      00157     
+                      00158     
+000090                00159 initialize_1second   
+000090 EC?? F???      00160     call    Read_x
+000094 CFC3 F???      00161     movff   ADRESL , x_0
+000098 0E00           00162     movlw   0x00
+00009A 6E??           00163     movwf   x_max
+                      00164     
+                      00165     ;    call    Read_y
+                      00166 ;    movff   ADRESH , y_0_H
+                      00167 ;    movff   ADRESL , y_0_L
+                      00168 ;    
+                      00169 ;    call    Read_z
+                      00170 ;    movff   ADRESH , z_0_H
+                      00171 ;    movff   ADRESL , z_0_L
+                      00172     
+00009C 0012           00173     return
+                      00174     
+                      00175     
+                      00176     end
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  5
 
 
 SYMBOL TABLE
@@ -202,7 +272,7 @@ ADMSK4                            00000004
 ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  5
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  6
 
 
 SYMBOL TABLE
@@ -261,7 +331,7 @@ ANSEL15                           00000007
 ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  6
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  7
 
 
 SYMBOL TABLE
@@ -320,7 +390,7 @@ C1OUT                             00000002
 C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  7
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  8
 
 
 SYMBOL TABLE
@@ -379,7 +449,7 @@ CCP1IF                            00000001
 CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  8
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE  9
 
 
 SYMBOL TABLE
@@ -438,7 +508,7 @@ CCP5IP                            00000002
 CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  9
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 10
 
 
 SYMBOL TABLE
@@ -497,7 +567,7 @@ CCP9IF                            00000006
 CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 10
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 11
 
 
 SYMBOL TABLE
@@ -556,7 +626,7 @@ CHSN0                             00000000
 CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 11
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 12
 
 
 SYMBOL TABLE
@@ -615,7 +685,7 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 12
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 13
 
 
 SYMBOL TABLE
@@ -674,7 +744,7 @@ ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 13
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 14
 
 
 SYMBOL TABLE
@@ -733,7 +803,7 @@ FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 14
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 15
 
 
 SYMBOL TABLE
@@ -757,6 +827,7 @@ HLVDL0                            00000000
 HLVDL1                            00000001
 HLVDL2                            00000002
 HLVDL3                            00000003
+Hex_setup                         00000000
 I2C_DAT                           00000005
 I2C_READ                          00000002
 I2C_START                         00000003
@@ -791,13 +862,13 @@ INT3                              00000003
 INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
-INT3IF                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 15
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+INT3IF                            00000002
 INT3IP                            00000001
 INT3P                             00000001
 INTCON                            00000FF2
@@ -850,13 +921,13 @@ LATB5                             00000005
 LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
-LATC0                             00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 16
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATC0                             00000000
 LATC1                             00000001
 LATC2                             00000002
 LATC3                             00000003
@@ -909,18 +980,21 @@ LATJ                              00000F91
 LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
-LATJ3                             00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 17
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATJ3                             00000003
 LATJ4                             00000004
 LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
 LB                                00000006
+LCD_Setup                         00000000
+LCD_Write_Hex                     00000000
+LCD_Write_Message                 00000000
 LVDIE                             00000002
 LVDIF                             00000002
 LVDIP                             00000002
@@ -965,16 +1039,16 @@ NOT_WRITE                         00000002
 OBF                               00000006
 ODCON1                            00000F29
 ODCON2                            00000F28
-ODCON3                            00000F27
-OE                                00000001
-OERR                              00000001
-OERR1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 18
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ODCON3                            00000F27
+OE                                00000001
+OERR                              00000001
+OERR1                             00000001
 OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
@@ -1024,16 +1098,16 @@ P3DC3                             00000003
 P3DC4                             00000004
 P3DC5                             00000005
 P3DC6                             00000006
-P3M0                              00000006
-P3M1                              00000007
-P3RSEN                            00000007
-PA3                               00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 19
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+P3M0                              00000006
+P3M1                              00000007
+P3RSEN                            00000007
+PA3                               00000000
 PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
@@ -1083,16 +1157,16 @@ PORTG                             00000F86
 PORTH                             00000F87
 PORTJ                             00000F88
 POSTDEC0                          00000FED
-POSTDEC1                          00000FE5
-POSTDEC2                          00000FDD
-POSTINC0                          00000FEE
-POSTINC1                          00000FE6
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 20
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+POSTDEC1                          00000FE5
+POSTDEC2                          00000FDD
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
 POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
@@ -1142,16 +1216,16 @@ R                                 00000002
 RA0                               00000000
 RA1                               00000001
 RA2                               00000002
-RA3                               00000003
-RA4                               00000004
-RA5                               00000005
-RA6                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 21
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
 RA7                               00000007
 RB0                               00000000
 RB1                               00000001
@@ -1201,16 +1275,16 @@ RD16                              00000001
 RD2                               00000002
 RD3                               00000003
 RD4                               00000004
-RD5                               00000005
-RD6                               00000006
-RD7                               00000007
-RDPU                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 22
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RDPU                              00000007
 RE0                               00000000
 RE1                               00000001
 RE2                               00000002
@@ -1260,16 +1334,16 @@ RODIV1                            00000001
 RODIV2                            00000002
 RODIV3                            00000003
 ROON                              00000007
-ROSEL                             00000004
-ROSSLP                            00000005
-RSEN                              00000001
-RTCC                              00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 23
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ROSEL                             00000004
+ROSSLP                            00000005
+RSEN                              00000001
+RTCC                              00000004
 RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
@@ -1298,9 +1372,9 @@ RX9D2                             00000000
 RXDTP                             00000005
 R_NOT_W                           00000002
 R_W                               00000002
-Read_x                            00000016
-Read_y                            00000022
-Read_z                            0000002E
+Read_x                            00000000
+Read_y                            00000000
+Read_z                            00000000
 S                                 00000003
 SBOREN                            00000006
 SCK1                              00000003
@@ -1319,16 +1393,16 @@ SDO2                              00000004
 SEN                               00000000
 SENDB                             00000003
 SENDB1                            00000003
-SENDB2                            00000003
-SMP                               00000007
-SOSCEN                            00000003
-SOSCGO                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 24
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SENDB2                            00000003
+SMP                               00000007
+SOSCEN                            00000003
+SOSCGO                            00000003
 SOSCI                             00000001
 SOSCO                             00000000
 SOSCRUN                           00000006
@@ -1378,16 +1452,16 @@ SSPCON1                           00000FC6
 SSPCON2                           00000FC5
 SSPEN                             00000005
 SSPIE                             00000003
-SSPIF                             00000003
-SSPIP                             00000003
-SSPM0                             00000000
-SSPM1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 25
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPIF                             00000003
+SSPIP                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
 SSPM2                             00000002
 SSPM3                             00000003
 SSPOV                             00000006
@@ -1437,16 +1511,16 @@ T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000FCD
 T1G                               00000005
-T1GCON                            00000FAA
-T1GGO                             00000003
-T1GGO_NOT_T1DONE                  00000003
-T1GPOL                            00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 26
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GCON                            00000FAA
+T1GGO                             00000003
+T1GGO_NOT_T1DONE                  00000003
+T1GPOL                            00000006
 T1GSPM                            00000004
 T1GSS0                            00000000
 T1GSS1                            00000001
@@ -1496,16 +1570,16 @@ T5GTM                             00000005
 T5GVAL                            00000002
 T6CKPS0                           00000000
 T6CKPS1                           00000001
-T6CON                             00000F39
-T6OUTPS0                          00000003
-T6OUTPS1                          00000004
-T6OUTPS2                          00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 27
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T6CON                             00000F39
+T6OUTPS0                          00000003
+T6OUTPS1                          00000004
+T6OUTPS2                          00000005
 T6OUTPS3                          00000006
 T7CKI                             00000004
 T7CKPS0                           00000004
@@ -1555,16 +1629,16 @@ TMR12IP                           00000006
 TMR12MD                           00000000
 TMR12ON                           00000002
 TMR1CS0                           00000006
-TMR1CS1                           00000007
-TMR1GE                            00000007
-TMR1GIE                           00000002
-TMR1GIF                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 28
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1CS1                           00000007
+TMR1GE                            00000007
+TMR1GIE                           00000002
+TMR1GIF                           00000002
 TMR1GIP                           00000002
 TMR1H                             00000FCF
 TMR1IE                            00000000
@@ -1614,16 +1688,16 @@ TMR5L                             00000F7C
 TMR5MD                            00000003
 TMR5ON                            00000000
 TMR6                              00000F3B
-TMR6IE                            00000002
-TMR6IF                            00000002
-TMR6IP                            00000002
-TMR6MD                            00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 29
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR6IE                            00000002
+TMR6IF                            00000002
+TMR6IP                            00000002
+TMR6MD                            00000004
 TMR6ON                            00000002
 TMR7                              00000F3E
 TMR7CS0                           00000006
@@ -1673,16 +1747,16 @@ TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
 TRISC1                            00000001
-TRISC2                            00000002
-TRISC3                            00000003
-TRISC4                            00000004
-TRISC5                            00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 30
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
 TRISC6                            00000006
 TRISC7                            00000007
 TRISD                             00000F95
@@ -1732,16 +1806,16 @@ TRISJ1                            00000001
 TRISJ2                            00000002
 TRISJ3                            00000003
 TRISJ4                            00000004
-TRISJ5                            00000005
-TRISJ6                            00000006
-TRISJ7                            00000007
-TRMT                              00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 31
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISJ5                            00000005
+TRISJ6                            00000006
+TRISJ7                            00000007
+TRMT                              00000001
 TRMT1                             00000001
 TRMT2                             00000001
 TUN0                              00000000
@@ -1784,23 +1858,25 @@ U2OD                              00000007
 UA                                00000001
 UART1MD                           00000003
 UART2MD                           00000004
+UART_Setup                        00000000
+UART_Transmit_Message             00000000
 UB                                00000007
 ULPEN                             00000002
 ULPLVL                            00000005
 ULPSINK                           00000001
 ULPWU                             00000000
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 33
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 VCFG0                             00000004
 VCFG1                             00000005
 VDIRMAG                           00000007
 VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 32
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 W                                 00000000
 WAIT0                             00000004
 WAIT1                             00000005
@@ -1848,18 +1924,18 @@ _CONFIG4L                         00300006
 _CONFIG5H                         00300009
 _CONFIG5L                         00300008
 _CONFIG6H                         0030000B
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 34
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _CONFIG6L                         0030000A
 _CONFIG7H                         0030000D
 _CONFIG7L                         0030000C
 _CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
 _CP1_OFF_5L                       000000FF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 33
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _CP1_ON_5L                        000000FD
 _CP2_OFF_5L                       000000FF
 _CP2_ON_5L                        000000FB
@@ -1907,18 +1983,18 @@ _FCMEN_OFF_1H                     000000BF
 _FCMEN_ON_1H                      000000FF
 _FOSC_EC1IO_1H                    000000FC
 _FOSC_EC1_1H                      000000FD
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _FOSC_EC2IO_1H                    000000FA
 _FOSC_EC2_1H                      000000FB
 _FOSC_EC3IO_1H                    000000F4
 _FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
 _FOSC_HS2_1H                      000000F2
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 34
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _FOSC_INTIO1_1H                   000000F9
 _FOSC_INTIO2_1H                   000000F8
 _FOSC_LP_1H                       000000F0
@@ -1966,18 +2042,18 @@ _WDTPS_128_2H                     0000009F
 _WDTPS_131072_2H                  000000C7
 _WDTPS_16384_2H                   000000BB
 _WDTPS_16_2H                      00000093
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 36
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _WDTPS_1_2H                       00000083
 _WDTPS_2048_2H                    000000AF
 _WDTPS_256_2H                     000000A3
 _WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
 _WDTPS_32768_2H                   000000BF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 35
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _WDTPS_32_2H                      00000097
 _WDTPS_4096_2H                    000000B3
 _WDTPS_4_2H                       0000008B
@@ -2012,16 +2088,37 @@ _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-adc_loop                          0000003A
-carry                             00000001
-count                             00000000
-loop4times                        0000008E
-reduce                            00000044
-updatecarry0                      000000A2
-updatecarry1                      000000A8
+__DEBUG                           
+__MPLAB_DEBUGGER_ICD3             1
+check1sec                         00000000
+initialize_1second                00000090
+loop                              0000002C
+loop1sec0                         00000046
+loop1sec1                         0000007E
+measure_loop                      00000000
+myArray                           00000400
+myTable                           00000000
+myTable_l                         00000002
+overflow_correction               00000072
+rd00                              00000042
+MPASM 5.81                     INTERRUPT.ASM   11-13-2018  12:57:29         PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+rd01                              0000007A
+setup                             00000000
+start                             00000018
+x_0                               00000001
+x_max                             00000006
+x_t                               00000005
+y_0                               00000002
+z_0_H                             00000003
+z_0_L                             00000004
 
 Errors   :     0
-Warnings :     2 reported,     0 suppressed
+Warnings :     3 reported,     0 suppressed
 Messages :     0 reported,     0 suppressed
 
 

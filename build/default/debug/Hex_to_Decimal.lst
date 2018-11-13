@@ -1,4 +1,4 @@
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  1
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -15,135 +15,246 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00002 
-  0000                00003     global  ADC_Setup, Read_x,Read_y , Read_z
-                      00004     
-                      00005 acs0    udata_acs   ; reserve data space in access ram
-000000                00006 count  res 1
-000001                00007 carry  res 4
-                      00008   
-                      00009 ADC    code
-                      00010     
-000000                00011 ADC_Setup
-                      00012     
-000000 8092           00013     bsf     TRISA,RA0       ; use pin A0(==AN0) for input
-000002 8125           00014     bsf     ANCON0,ANSEL0   ; set A0 to analog
-                      00015     
-000004 8292           00016     bsf     TRISA,RA1       ; use pin A0(==AN0) for input
-000006 8325           00017     bsf     ANCON0,ANSEL1   ; set A1 to analog
-                      00018     
-000008 8492           00019     bsf     TRISA,RA2       ; use pin A0(==AN0) for input
-00000A 8525           00020     bsf     ANCON0,ANSEL2   ; set A2 to analog    
-                      00021   
-00000C 0E20           00022     movlw   0x20            ; Select 4.096V positive reference
-00000E 6EC1           00023     movwf   ADCON1          ; 0V for -ve reference and -ve input
-000010 0EF6           00024     movlw   0xF6            ; Right justified output
-000012 6EC0           00025     movwf   ADCON2          ; Fosc/64 clock and acquisition times
-000014 0012           00026     return
-                      00027 
-000016                00028 Read_x
-000016 0E01           00029     movlw   0x01            ; select AN0 for measurement
-000018 6EC2           00030     movwf   ADCON0          ; and turn ADC on
-                      00031     
-00001A 82C2           00032     bsf     ADCON0,GO       ; Start conversion
-00001C EC?? F???      00033     call    adc_loop
-000020 0012           00034     return
-                      00035 
-000022                00036 Read_y
-000022 0E05           00037     movlw   0x05            ; select AN1 for measurement
-000024 6EC2           00038     movwf   ADCON0          ; and turn ADC on
-                      00039     
-000026 82C2           00040     bsf     ADCON0,GO       ; Start conversion
-000028 EC?? F???      00041     call    adc_loop
-00002C 0012           00042     return
-00002E                00043 Read_z
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  2
+  0000                00002         extern  LCD_Setup, LCD_Write_Message        ; external LCD subroutines
+  0000                00003         extern          LCD_Write_Hex               ; external LCD subroutines
+  0000                00004         extern  ADC_Setup, Read_x,Read_y , Read_z                   ; external ADC routines
+  0000                00005         global  measure_loop , Hex_setup
+                      00006         
+                      00007         
+                      00008 acs0    udata_acs   ; reserve data space in access ram
+000000                00009 counter     res 1   ; reserve one byte for a counter variable
+000001                00010 delay_count res 1   ; reserve one byte for counter in the delay routine
+000002                00011 multiplicationhigh1  res 1 ; reserve one byte for high bits of 16 bit by 8 bit multiplication
+000003                00012 multiplicationlow1  res 1 ; reserve one byte for low bits of 16 bit by 8 bit multiplication
+000004                00013 multiplicationhigh2  res 1 
+000005                00014 multiplicationlow2  res 1
+                      00015 
+000006                00016 resultlow res 1
+000007                00017 resultmiddle res 1
+000008                00018 resulthigh res 1
+000009                00019 result1low res 1
+00000A                00020 result1middle res 1
+00000B                00021 result1high res 1
+00000C                00022 result2low res 1
+00000D                00023 result2middle res 1
+00000E                00024 result2high res 1
+00000F                00025 result3low res 1
+000010                00026 result3lowermiddle res 1
+000011                00027 result3uppermiddle res 1
+000012                00028 result3high res 1
+                      00029 
+000013                00030 hexvoltagehigh res 1
+000014                00031 hexvoltagelow res 1
+                      00032  
+000015                00033 khigh res 1
+000016                00034 klow res 1
+                      00035  
+000017                00036 voltage1 res 1
+000018                00037 voltage2 res 1
+000019                00038 voltage3 res 1
+00001A                00039 voltage4 res 1
+                      00040  
+                      00041 ;rst    code    0    ; reset vector
+                      00042         ;goto   setup
+                      00043 
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00002E 0E09           00044     movlw   0x09            ; select AN2 for measurement
-000030 6EC2           00045     movwf   ADCON0          ; and turn ADC on
-                      00046     
-000032 82C2           00047     bsf     ADCON0,GO       ; Start conversion
-000034 EC?? F???      00048     call    adc_loop
-000038 0012           00049     return
-                      00050     
-00003A                00051 adc_loop
-00003A B2C2           00052     btfsc   ADCON0,GO       ; check to see if finished
-00003C D???           00053     bra     adc_loop
-00003E EC?? F???      00054     call    reduce
-000042 0012           00055     return
-                      00056 
-000044                00057 reduce                      ; Read data in 12-bits, reduces to 8-bits in ADRESL
-000044 0E04           00058     movlw   0x04
-000046 6E??           00059     movwf   count
-                      00060     
-000048 EE?? F0??      00061     lfsr    FSR0, carry     ; carry adressed stored here
-                      00062     
-00004C 0E07           00063     movlw   0x07
-00004E 64C4           00064     cpfsgt  ADRESH          ; skip if High > 7
-000050 EC?? F???      00065     call    updatecarry0
-000054 0E08           00066     movlw   0x08
-000056 60C4           00067     cpfslt  ADRESH                  ; skip if High < 8
-000058 EC?? F???      00068     call    updatecarry1            ; Carry = 1 , High = High - 8
-                      00069     
-00005C 0E03           00070     movlw   0x03
-00005E 64C4           00071     cpfsgt  ADRESH          ; skip if High > 3
-000060 EC?? F???      00072     call    updatecarry0
-000064 0E04           00073     movlw   0x04
-000066 60C4           00074     cpfslt  ADRESH                  ; skip if High < 4
-000068 EC?? F???      00075     call    updatecarry1            ; Carry = 1 , High = High - 4
-                      00076     
-00006C 0E01           00077     movlw  0x01
-00006E 64C4           00078     cpfsgt  ADRESH          ; skip if High > 1
-000070 EC?? F???      00079     call    updatecarry0
-000074 0E02           00080     movlw   0x02
-000076 60C4           00081     cpfslt  ADRESH                  ; skip if High < 2
-000078 EC?? F???      00082     call    updatecarry1            ; Carry = 1 , High = High - 2
-                      00083     
-00007C 0E00           00084     movlw  0x00
-00007E 64C4           00085     cpfsgt  ADRESH          ; skip if High > 0
-000080 EC?? F???      00086     call    updatecarry0
-000084 0E01           00087     movlw   0x01
-000086 60C4           00088     cpfslt  ADRESH                  ; skip if High < 1
-000088 EC?? F???      00089     call    updatecarry1            ; Carry = 1 , High = High - 1
-00008C 52ED           00090     movf    POSTDEC0                ; Decrement FSR0 so the location of carry 3 is maintained
-Warning[207]: Found label after column 1. (loop4times)
-00008E                00091  loop4times                         
-00008E CFED FFF5      00092     movff   POSTDEC0 , TABLAT
-000092 90D8           00093     bcf     STATUS, C               ; Clear carry
-000094 0E00           00094     movlw   0x00
-000096 62F5           00095     cpfseq  TABLAT                  ; Skip if tablat zero
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  3
+                      00044 ;pdata  code    ; a section of programme memory for storing data
+                      00045         ; ******* myTable, data in programme memory, and its length *****
+                      00046 ;myTable data       "Hello World!\n"    ; message, plus carriage return
+                      00047         ;;constant    myTable_l=.2      ; length of data
+                      00048         
+                      00049 hex     code
+                      00050         ; ******* Programme FLASH read Setup Code ***********************
+000000 9C7F           00051 Hex_setup       bcf     EECON1, CFGS    ; point to Flash program memory  
+000002 8E7F           00052         bsf     EECON1, EEPGD   ; access Flash program memory
+000004 EC?? F???      00053         call    LCD_Setup       ; setup LCD
+000008 EC?? F???      00054         call    ADC_Setup       ; setup ADC
+00000C 0012           00055         return
+                      00056         
+                      00057         
+00000E                00058 measure_loop            ;displaying port d
+                      00059         ;call   ADC_Read
+                      00060         ;movf   ADRESH,W
+00000E 0E00           00061         movlw   0x00
+000010 6E??           00062         movwf   hexvoltagehigh
+000012 5083           00063         movf    PORTD,W
+000014 6E??           00064         movwf   hexvoltagelow
+                      00065         ;movf   ADRESH,W
+                      00066         ;call   LCD_Write_Hex
+                      00067         ;movf   ADRESL,W
+                      00068         ;call   LCD_Write_Hex
+                      00069         ;goto   measure_loop            ; goto current line in code
+                      00070         
+                      00071         
+                      00072         
+000016 50??           00073         movf hexvoltagelow,W
+000018 6E20           00074         movwf 0x20
+00001A 50??           00075         movf hexvoltagehigh,W
+00001C 6E21           00076         movwf 0x21
+00001E 0E34           00077         movlw 0x34
+000020 6E22           00078         movwf 0x22
+000022 0E8A           00079         movlw 0x8A
+000024 6E??           00080         movwf klow
+000026 0E41           00081         movlw 0x41
+000028 6E??           00082         movwf khigh
+                      00083         
+                      00084         
+00002A EC?? F???      00085         call multiply16by16
+00002E 50??           00086         movf result3high,W
+000030 6E??           00087         movwf voltage1
+000032 50??           00088         movf result3uppermiddle,W
+000034 6E22           00089         movwf 0x22
+000036 50??           00090         movf result3lowermiddle,W
+000038 6E21           00091         movwf 0x21
+00003A 50??           00092         movf result3low, W
+00003C 6E20           00093         movwf 0x20
+00003E EC?? F???      00094         call multiply8by24
+000042 50??           00095         movf result3high,W
+000044 6E??           00096         movwf voltage2
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000098 80D8           00096     bsf     STATUS, C               ; Set carry if tablat != 0
-                      00097     
-00009A 32C3           00098     rrcf    ADRESL , 1              ; Rotate right with carry
-00009C 2E??           00099     decfsz  count
-00009E D???           00100     bra     loop4times
-                      00101     
-0000A0 0012           00102     return              ; Return the new 8 bit measurement in ADRESL
-                      00103     
-0000A2                00104 updatecarry0   
-0000A2 0E00           00105     movlw   0x00
-0000A4 6EEE           00106     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000A6 0012           00107     return
-                      00108     
-Warning[207]: Found label after column 1. (updatecarry1)
-0000A8                00109  updatecarry1           ; Subtraction stored in W
-0000A8 5EC4           00110     subwf   ADRESH      ; Subtract W from high
-0000AA 0E01           00111     movlw   0x01
-0000AC 6EEE           00112     movwf   POSTINC0    ; Update carry as 1, move to next carry
-0000AE 0012           00113     return         
-                      00114     
-                      00115     end
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  4
+000046 50??           00097         movf result3uppermiddle, W
+000048 6E22           00098         movwf 0x22
+00004A 50??           00099         movf result3lowermiddle, W
+00004C 6E21           00100         movwf 0x21
+00004E 50??           00101         movf result3low, W
+000050 6E20           00102         movwf 0x20
+000052 EC?? F???      00103         call multiply8by24
+000056 50??           00104         movf result3high,W
+000058 6E??           00105         movwf voltage3
+00005A 50??           00106         movf result3uppermiddle, W
+00005C 6E22           00107         movwf 0x22
+00005E 50??           00108         movf result3lowermiddle, W
+000060 6E21           00109         movwf 0x21
+000062 50??           00110         movf result3low, W
+000064 6E20           00111         movwf 0x20
+000066 EC?? F???      00112         call multiply8by24
+00006A 50??           00113         movf result3high,W
+00006C 6E??           00114         movwf voltage4
+                      00115         
+00006E 50??           00116         movf    voltage1,W
+000070 EC?? F???      00117         call    LCD_Write_Hex   
+000074 50??           00118         movf    voltage2,W
+000076 EC?? F???      00119         call    LCD_Write_Hex   
+00007A 50??           00120         movf    voltage3,W
+00007C EC?? F???      00121         call    LCD_Write_Hex   
+000080 50??           00122         movf    voltage4,W
+000082 EC?? F???      00123         call    LCD_Write_Hex   
+                      00124         
+000086 0012           00125         return
+                      00126         
+                      00127         
+000088                00128 multiply8by24
+000088 0E0A           00129         movlw 0x0A
+00008A EC?? F???      00130         call multiply8by16
+00008E 0E0A           00131         movlw 0x0A
+000090 0222           00132         mulwf 0x22
+000092 CFF4 F???      00133         movff PRODH, multiplicationhigh1
+000096 CFF3 F???      00134         movff PRODL, multiplicationlow1
+00009A C??? F???      00135         movff resultlow, result3low
+00009E C??? F???      00136         movff resultmiddle, result3lowermiddle
+0000A2 50??           00137         movf resulthigh,W
+0000A4 2000           00138         addwfc multiplicationlow1, 0, 0
+0000A6 6E??           00139         movwf result3uppermiddle
+0000A8 0E00           00140         movlw 0x0
+0000AA 2000           00141         addwfc multiplicationhigh1, 0, 0
+0000AC 6E??           00142         movwf result3high
+                      00143         ;call   LCD_Write_Hex
+0000AE 50??           00144         movf    result3uppermiddle,W
+                      00145         ;call   LCD_Write_Hex
+0000B0 50??           00146         movf    result3lowermiddle,W
+                      00147         ;call   LCD_Write_Hex
+0000B2 50??           00148         movf    result3low,W
+                      00149         ;call   LCD_Write_Hex
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0000B4 0012           00150         return
+                      00151         
+0000B6                00152 multiply16by16
+0000B6 50??           00153         movf klow,W
+0000B8 EC?? F???      00154         call multiply8by16
+0000BC C??? F???      00155         movff resultlow, result1low
+0000C0 C??? F???      00156         movff resultmiddle, result1middle
+0000C4 C??? F???      00157         movff resulthigh, result1high
+0000C8 50??           00158         movf khigh,W
+0000CA EC?? F???      00159         call multiply8by16
+0000CE C??? F???      00160         movff resultlow, result2low
+0000D2 C??? F???      00161         movff resultmiddle, result2middle
+0000D6 C??? F???      00162         movff resulthigh, result2high
+0000DA C??? F???      00163         movff result1low, result3low
+0000DE 50??           00164         movf result1middle,W
+0000E0 2000           00165         addwfc result2low, 0, 0
+0000E2 6E??           00166         movwf result3lowermiddle
+0000E4 50??           00167         movf result1high,W
+0000E6 2000           00168         addwfc result2middle, 0, 0
+0000E8 6E??           00169         movwf result3uppermiddle
+0000EA 0E00           00170         movlw 0x0
+0000EC 2000           00171         addwfc result2high, 0, 0
+0000EE 6E??           00172         movwf result3high
+                      00173         ;call   LCD_Write_Hex
+0000F0 50??           00174         movf    result3uppermiddle,W
+                      00175         ;call   LCD_Write_Hex
+0000F2 50??           00176         movf    result3lowermiddle,W
+                      00177         ;call   LCD_Write_Hex
+0000F4 50??           00178         movf    result3low,W
+                      00179         ;call   LCD_Write_Hex
+0000F6 0012           00180         return
+                      00181         
+                      00182         
+                      00183         
+                      00184 
+0000F8                00185 multiply8by16
+0000F8 0220           00186         mulwf 0x20
+0000FA CFF4 F???      00187         movff PRODH, multiplicationhigh1
+0000FE CFF3 F???      00188         movff PRODL, multiplicationlow1
+000102 0221           00189         mulwf 0x21
+000104 CFF4 F???      00190         movff PRODH, multiplicationhigh2
+000108 CFF3 F???      00191         movff PRODL, multiplicationlow2
+00010C C??? F???      00192         movff multiplicationlow1, resultlow
+000110 50??           00193         movf multiplicationhigh1,W
+000112 2000           00194         addwfc multiplicationlow2, 0, 0
+000114 6E??           00195         movwf resultmiddle
+000116 0E00           00196         movlw 0x0
+000118 2000           00197         addwfc multiplicationhigh2, 0, 0
+00011A 6E??           00198         movwf resulthigh
+00011C 50??           00199         movf    resulthigh,W
+                      00200         ;call   LCD_Write_Hex
+00011E 50??           00201         movf    resultmiddle,W
+                      00202         ;call   LCD_Write_Hex
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000120 50??           00203         movf    resultlow,W
+                      00204         ;call   LCD_Write_Hex
+000122 0012           00205         return
+                      00206         
+                      00207 
+                      00208         
+                      00209         
+                      00210 
+                      00211         ; a delay subroutine if you need one, times around loop in delay_count
+000124 2E??           00212 delay   decfsz  delay_count     ; decrement until zero
+000126 D???           00213         bra delay
+000128 0012           00214         return
+                      00215 
+                      00216         end
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  6
 
 
 SYMBOL TABLE
@@ -202,7 +313,7 @@ ADMSK4                            00000004
 ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  5
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  7
 
 
 SYMBOL TABLE
@@ -261,7 +372,7 @@ ANSEL15                           00000007
 ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  6
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  8
 
 
 SYMBOL TABLE
@@ -320,7 +431,7 @@ C1OUT                             00000002
 C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  7
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE  9
 
 
 SYMBOL TABLE
@@ -379,7 +490,7 @@ CCP1IF                            00000001
 CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  8
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 10
 
 
 SYMBOL TABLE
@@ -438,7 +549,7 @@ CCP5IP                            00000002
 CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE  9
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 11
 
 
 SYMBOL TABLE
@@ -497,7 +608,7 @@ CCP9IF                            00000006
 CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 10
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 12
 
 
 SYMBOL TABLE
@@ -556,7 +667,7 @@ CHSN0                             00000000
 CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 11
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 13
 
 
 SYMBOL TABLE
@@ -615,7 +726,7 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 12
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 14
 
 
 SYMBOL TABLE
@@ -674,7 +785,7 @@ ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 13
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 15
 
 
 SYMBOL TABLE
@@ -733,7 +844,7 @@ FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 14
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 16
 
 
 SYMBOL TABLE
@@ -757,6 +868,7 @@ HLVDL0                            00000000
 HLVDL1                            00000001
 HLVDL2                            00000002
 HLVDL3                            00000003
+Hex_setup                         00000000
 I2C_DAT                           00000005
 I2C_READ                          00000002
 I2C_START                         00000003
@@ -791,13 +903,13 @@ INT3                              00000003
 INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
-INT3IF                            00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 15
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+INT3IF                            00000002
 INT3IP                            00000001
 INT3P                             00000001
 INTCON                            00000FF2
@@ -850,13 +962,13 @@ LATB5                             00000005
 LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
-LATC0                             00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 16
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATC0                             00000000
 LATC1                             00000001
 LATC2                             00000002
 LATC3                             00000003
@@ -909,18 +1021,21 @@ LATJ                              00000F91
 LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
-LATJ3                             00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 17
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LATJ3                             00000003
 LATJ4                             00000004
 LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
 LB                                00000006
+LCD_Setup                         00000000
+LCD_Write_Hex                     00000000
+LCD_Write_Message                 00000000
 LVDIE                             00000002
 LVDIF                             00000002
 LVDIP                             00000002
@@ -965,16 +1080,16 @@ NOT_WRITE                         00000002
 OBF                               00000006
 ODCON1                            00000F29
 ODCON2                            00000F28
-ODCON3                            00000F27
-OE                                00000001
-OERR                              00000001
-OERR1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 18
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ODCON3                            00000F27
+OE                                00000001
+OERR                              00000001
+OERR1                             00000001
 OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
@@ -1024,16 +1139,16 @@ P3DC3                             00000003
 P3DC4                             00000004
 P3DC5                             00000005
 P3DC6                             00000006
-P3M0                              00000006
-P3M1                              00000007
-P3RSEN                            00000007
-PA3                               00000000
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 19
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+P3M0                              00000006
+P3M1                              00000007
+P3RSEN                            00000007
+PA3                               00000000
 PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
@@ -1083,16 +1198,16 @@ PORTG                             00000F86
 PORTH                             00000F87
 PORTJ                             00000F88
 POSTDEC0                          00000FED
-POSTDEC1                          00000FE5
-POSTDEC2                          00000FDD
-POSTINC0                          00000FEE
-POSTINC1                          00000FE6
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 20
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+POSTDEC1                          00000FE5
+POSTDEC2                          00000FDD
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
 POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
@@ -1142,16 +1257,16 @@ R                                 00000002
 RA0                               00000000
 RA1                               00000001
 RA2                               00000002
-RA3                               00000003
-RA4                               00000004
-RA5                               00000005
-RA6                               00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 21
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
 RA7                               00000007
 RB0                               00000000
 RB1                               00000001
@@ -1201,16 +1316,16 @@ RD16                              00000001
 RD2                               00000002
 RD3                               00000003
 RD4                               00000004
-RD5                               00000005
-RD6                               00000006
-RD7                               00000007
-RDPU                              00000007
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 22
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RDPU                              00000007
 RE0                               00000000
 RE1                               00000001
 RE2                               00000002
@@ -1260,16 +1375,16 @@ RODIV1                            00000001
 RODIV2                            00000002
 RODIV3                            00000003
 ROON                              00000007
-ROSEL                             00000004
-ROSSLP                            00000005
-RSEN                              00000001
-RTCC                              00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 23
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+ROSEL                             00000004
+ROSSLP                            00000005
+RSEN                              00000001
+RTCC                              00000004
 RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
@@ -1298,9 +1413,9 @@ RX9D2                             00000000
 RXDTP                             00000005
 R_NOT_W                           00000002
 R_W                               00000002
-Read_x                            00000016
-Read_y                            00000022
-Read_z                            0000002E
+Read_x                            00000000
+Read_y                            00000000
+Read_z                            00000000
 S                                 00000003
 SBOREN                            00000006
 SCK1                              00000003
@@ -1319,16 +1434,16 @@ SDO2                              00000004
 SEN                               00000000
 SENDB                             00000003
 SENDB1                            00000003
-SENDB2                            00000003
-SMP                               00000007
-SOSCEN                            00000003
-SOSCGO                            00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 24
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SENDB2                            00000003
+SMP                               00000007
+SOSCEN                            00000003
+SOSCGO                            00000003
 SOSCI                             00000001
 SOSCO                             00000000
 SOSCRUN                           00000006
@@ -1378,16 +1493,16 @@ SSPCON1                           00000FC6
 SSPCON2                           00000FC5
 SSPEN                             00000005
 SSPIE                             00000003
-SSPIF                             00000003
-SSPIP                             00000003
-SSPM0                             00000000
-SSPM1                             00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 25
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPIF                             00000003
+SSPIP                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
 SSPM2                             00000002
 SSPM3                             00000003
 SSPOV                             00000006
@@ -1437,16 +1552,16 @@ T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000FCD
 T1G                               00000005
-T1GCON                            00000FAA
-T1GGO                             00000003
-T1GGO_NOT_T1DONE                  00000003
-T1GPOL                            00000006
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 26
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GCON                            00000FAA
+T1GGO                             00000003
+T1GGO_NOT_T1DONE                  00000003
+T1GPOL                            00000006
 T1GSPM                            00000004
 T1GSS0                            00000000
 T1GSS1                            00000001
@@ -1496,16 +1611,16 @@ T5GTM                             00000005
 T5GVAL                            00000002
 T6CKPS0                           00000000
 T6CKPS1                           00000001
-T6CON                             00000F39
-T6OUTPS0                          00000003
-T6OUTPS1                          00000004
-T6OUTPS2                          00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 27
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T6CON                             00000F39
+T6OUTPS0                          00000003
+T6OUTPS1                          00000004
+T6OUTPS2                          00000005
 T6OUTPS3                          00000006
 T7CKI                             00000004
 T7CKPS0                           00000004
@@ -1555,16 +1670,16 @@ TMR12IP                           00000006
 TMR12MD                           00000000
 TMR12ON                           00000002
 TMR1CS0                           00000006
-TMR1CS1                           00000007
-TMR1GE                            00000007
-TMR1GIE                           00000002
-TMR1GIF                           00000002
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 28
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1CS1                           00000007
+TMR1GE                            00000007
+TMR1GIE                           00000002
+TMR1GIF                           00000002
 TMR1GIP                           00000002
 TMR1H                             00000FCF
 TMR1IE                            00000000
@@ -1614,16 +1729,16 @@ TMR5L                             00000F7C
 TMR5MD                            00000003
 TMR5ON                            00000000
 TMR6                              00000F3B
-TMR6IE                            00000002
-TMR6IF                            00000002
-TMR6IP                            00000002
-TMR6MD                            00000004
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 29
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR6IE                            00000002
+TMR6IF                            00000002
+TMR6IP                            00000002
+TMR6MD                            00000004
 TMR6ON                            00000002
 TMR7                              00000F3E
 TMR7CS0                           00000006
@@ -1673,16 +1788,16 @@ TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
 TRISC1                            00000001
-TRISC2                            00000002
-TRISC3                            00000003
-TRISC4                            00000004
-TRISC5                            00000005
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 30
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
 TRISC6                            00000006
 TRISC7                            00000007
 TRISD                             00000F95
@@ -1732,16 +1847,16 @@ TRISJ1                            00000001
 TRISJ2                            00000002
 TRISJ3                            00000003
 TRISJ4                            00000004
-TRISJ5                            00000005
-TRISJ6                            00000006
-TRISJ7                            00000007
-TRMT                              00000001
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 31
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISJ5                            00000005
+TRISJ6                            00000006
+TRISJ7                            00000007
+TRMT                              00000001
 TRMT1                             00000001
 TRMT2                             00000001
 TUN0                              00000000
@@ -1791,16 +1906,16 @@ ULPSINK                           00000001
 ULPWU                             00000000
 VCFG0                             00000004
 VCFG1                             00000005
-VDIRMAG                           00000007
-VNCFG                             00000003
-VREF_MINUS                        00000002
-VREF_PLUS                         00000003
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 32
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VDIRMAG                           00000007
+VNCFG                             00000003
+VREF_MINUS                        00000002
+VREF_PLUS                         00000003
 W                                 00000000
 WAIT0                             00000004
 WAIT1                             00000005
@@ -1850,16 +1965,16 @@ _CONFIG5L                         00300008
 _CONFIG6H                         0030000B
 _CONFIG6L                         0030000A
 _CONFIG7H                         0030000D
-_CONFIG7L                         0030000C
-_CP0_OFF_5L                       000000FF
-_CP0_ON_5L                        000000FE
-_CP1_OFF_5L                       000000FF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 33
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CONFIG7L                         0030000C
+_CP0_OFF_5L                       000000FF
+_CP0_ON_5L                        000000FE
+_CP1_OFF_5L                       000000FF
 _CP1_ON_5L                        000000FD
 _CP2_OFF_5L                       000000FF
 _CP2_ON_5L                        000000FB
@@ -1909,16 +2024,16 @@ _FOSC_EC1IO_1H                    000000FC
 _FOSC_EC1_1H                      000000FD
 _FOSC_EC2IO_1H                    000000FA
 _FOSC_EC2_1H                      000000FB
-_FOSC_EC3IO_1H                    000000F4
-_FOSC_EC3_1H                      000000F5
-_FOSC_HS1_1H                      000000F3
-_FOSC_HS2_1H                      000000F2
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 34
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_EC3IO_1H                    000000F4
+_FOSC_EC3_1H                      000000F5
+_FOSC_HS1_1H                      000000F3
+_FOSC_HS2_1H                      000000F2
 _FOSC_INTIO1_1H                   000000F9
 _FOSC_INTIO2_1H                   000000F8
 _FOSC_LP_1H                       000000F0
@@ -1968,16 +2083,16 @@ _WDTPS_16384_2H                   000000BB
 _WDTPS_16_2H                      00000093
 _WDTPS_1_2H                       00000083
 _WDTPS_2048_2H                    000000AF
-_WDTPS_256_2H                     000000A3
-_WDTPS_262144_2H                  000000CB
-_WDTPS_2_2H                       00000087
-_WDTPS_32768_2H                   000000BF
-MPASM 5.81                      ADC_READ.ASM   11-13-2018  13:29:06         PAGE 35
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 37
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_256_2H                     000000A3
+_WDTPS_262144_2H                  000000CB
+_WDTPS_2_2H                       00000087
+_WDTPS_32768_2H                   000000BF
 _WDTPS_32_2H                      00000097
 _WDTPS_4096_2H                    000000B3
 _WDTPS_4_2H                       0000008B
@@ -2012,16 +2127,49 @@ _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-adc_loop                          0000003A
-carry                             00000001
-count                             00000000
-loop4times                        0000008E
-reduce                            00000044
-updatecarry0                      000000A2
-updatecarry1                      000000A8
+__DEBUG                           
+__MPLAB_DEBUGGER_ICD3             1
+counter                           00000000
+delay                             00000124
+delay_count                       00000001
+hexvoltagehigh                    00000013
+hexvoltagelow                     00000014
+khigh                             00000015
+klow                              00000016
+measure_loop                      0000000E
+multiplicationhigh1               00000002
+multiplicationhigh2               00000004
+multiplicationlow1                00000003
+multiplicationlow2                00000005
+multiply16by16                    000000B6
+MPASM 5.81                HEX_TO_DECIMAL.ASM   11-13-2018  12:57:29         PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+multiply8by16                     000000F8
+multiply8by24                     00000088
+result1high                       0000000B
+result1low                        00000009
+result1middle                     0000000A
+result2high                       0000000E
+result2low                        0000000C
+result2middle                     0000000D
+result3high                       00000012
+result3low                        0000000F
+result3lowermiddle                00000010
+result3uppermiddle                00000011
+resulthigh                        00000008
+resultlow                         00000006
+resultmiddle                      00000007
+voltage1                          00000017
+voltage2                          00000018
+voltage3                          00000019
+voltage4                          0000001A
 
 Errors   :     0
-Warnings :     2 reported,     0 suppressed
+Warnings :     0 reported,     0 suppressed
 Messages :     0 reported,     0 suppressed
 
 

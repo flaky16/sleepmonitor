@@ -9,8 +9,7 @@ carry  res 4
 ADC    code
     
 ADC_Setup
-    movlw   0x03
-    movwf   count
+    
     bsf	    TRISA,RA0	    ; use pin A0(==AN0) for input
     bsf	    ANCON0,ANSEL0   ; set A0 to analog
     
@@ -35,14 +34,14 @@ Read_x
     return
 
 Read_y
-    movlw   0x05	    ; select AN0 for measurement
+    movlw   0x05	    ; select AN1 for measurement
     movwf   ADCON0	    ; and turn ADC on
     
     bsf	    ADCON0,GO	    ; Start conversion
     call    adc_loop
     return
 Read_z
-    movlw   0x09	    ; select AN0 for measurement
+    movlw   0x09	    ; select AN2 for measurement
     movwf   ADCON0	    ; and turn ADC on
     
     bsf	    ADCON0,GO	    ; Start conversion
@@ -56,46 +55,50 @@ adc_loop
     return
 
 reduce			    ; Read data in 12-bits, reduces to 8-bits in ADRESL
+    movlw   0x04
+    movwf   count
+    
     lfsr    FSR0, carry     ; carry adressed stored here
-   
+    
     movlw   0x07
     cpfsgt  ADRESH	    ; skip if High > 7
     call    updatecarry0
     movlw   0x08
-    cpfsgt  ADRESH		    ; skip if High < 8
+    cpfslt  ADRESH		    ; skip if High < 8
     call    updatecarry1	    ; Carry = 1 , High = High - 8
     
     movlw   0x03
     cpfsgt  ADRESH	    ; skip if High > 3
     call    updatecarry0
     movlw   0x04
-    cpfsgt  ADRESH		    ; skip if High < 4
+    cpfslt  ADRESH		    ; skip if High < 4
     call    updatecarry1	    ; Carry = 1 , High = High - 4
     
     movlw  0x01
     cpfsgt  ADRESH	    ; skip if High > 1
     call    updatecarry0
     movlw   0x02
-    cpfsgt  ADRESH		    ; skip if High < 2
+    cpfslt  ADRESH		    ; skip if High < 2
     call    updatecarry1	    ; Carry = 1 , High = High - 2
     
     movlw  0x00
     cpfsgt  ADRESH	    ; skip if High > 0
     call    updatecarry0
     movlw   0x01
-    cpfsgt  ADRESH		    ; skip if High < 1
+    cpfslt  ADRESH		    ; skip if High < 1
     call    updatecarry1	    ; Carry = 1 , High = High - 1
-    
- loop4times 
-				    
+    movf    POSTDEC0		    ; Decrement FSR0 so the location of carry 3 is maintained
+ loop4times 			    
     movff   POSTDEC0 , TABLAT
-    clrc			    ; Clear carry
-    decfsz  TABLAT		    ; Skip if tablat zero
-    setc			    ; Set carry if tablat != 0
+    bcf	    STATUS, C		    ; Clear carry
+    movlw   0x00
+    cpfseq  TABLAT		    ; Skip if tablat zero
+    bsf	    STATUS, C		    ; Set carry if tablat != 0
     
-    rrcf     ADRESL		    ; Rotate right with carry
+    rrcf    ADRESL , 1		    ; Rotate right with carry
     decfsz  count
     bra     loop4times
+    
     return		; Return the new 8 bit measurement in ADRESL
     
 updatecarry0   
