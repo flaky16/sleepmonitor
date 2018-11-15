@@ -4,7 +4,7 @@
 
 	extern	UART_Setup, UART_Transmit_Message   ; external UART subroutines
 	extern  LCD_Setup, LCD_Write_Message	    ; external LCD subroutines
-	extern	LCD_Write_Hex			    ; external LCD subroutines
+	extern	LCD_Write_Hex	, LCD_Top	    ; external LCD subroutines
 	extern  ADC_Setup, Read_x,Read_y , Read_z		    ; external ADC routines
 	extern measure_loop , Hex_setup
 	
@@ -31,7 +31,7 @@ rst	code	0    ; reset vector
 pdata	code    ; a section of programme memory for storing data
 	; ******* myTable, data in programme memory, and its length *****
 myTable data	    "Hello World!\n"	; message, plus carriage return
-	constant    myTable_l=.2	; length of data
+	constant    myTable_l=.8	; length of data
 	
 int_hi code 0x0008 ; high vector, no low vector 
     btfss   INTCON,TMR0IF ; check that this is timer0 interrupt 
@@ -81,12 +81,15 @@ loop
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
     
-    movlw   0x1F
-    cpfsgt  PORTD 
+  ;  movlw   0x03
+  ;  cpfsgt  PORTD 
     bra loop
-
-    lfsr    FSR2, 0x100
-    call    UART_Transmit_Message    
+    
+   ; movlw   .8
+    ;movwf   PORTF
+   ; lfsr    FSR2, myTable
+   ; call    UART_Transmit_Message    
+    
     
     bra loop
 rd00
@@ -135,9 +138,7 @@ later
     movff   x_max , PORTE
     
     return
-    
-
-    
+   
  rd01
  
     call measure_loop

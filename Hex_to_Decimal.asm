@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	extern  LCD_Setup, LCD_Write_Message	    ; external LCD subroutines
-	extern		LCD_Write_Hex		    ; external LCD subroutines
+	extern	LCD_Top, LCD_Write_Hex		    ; external LCD subroutines
 	extern  ADC_Setup, Read_x,Read_y , Read_z		    ; external ADC routines
 	global  measure_loop , Hex_setup
 	
@@ -108,6 +108,8 @@ measure_loop		;displaying port d
 	call multiply8by24
 	movf result3high,W
 	movwf voltage4
+	
+	call LCD_Top
 	
 	movf	voltage1,W
 	call	LCD_Write_Hex	
