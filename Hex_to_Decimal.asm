@@ -62,11 +62,7 @@ measure_loop		;displaying port d
 	movwf	hexvoltagehigh
 	movf	PORTD,W
 	movwf	hexvoltagelow
-	;movf	ADRESH,W
-	;call	LCD_Write_Hex
-	;movf	ADRESL,W
-	;call	LCD_Write_Hex
-	;goto	measure_loop		; goto current line in code
+
 	
 	
 	
