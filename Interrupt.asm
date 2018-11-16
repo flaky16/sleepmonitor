@@ -23,7 +23,7 @@ x_max	res 1
 y_max	res 1
 z_max	res 1
 	
-values	res 120
+;values	res 4
 
 
 rst	code	0    ; reset vector
@@ -61,9 +61,10 @@ start
     movwf   TRISF
     movlw   0x00
     movwf   PORTD
-    lfsr    FSR1 , values
-    lfsr    FSR2 , values
-
+    lfsr    FSR1 , 0x300
+    lfsr    FSR2 , 0x300
+    movlw   0xFF
+    movwf   0x304
 
 loop
     call    initialize_second
@@ -71,23 +72,31 @@ loop
     btfss   PORTD, RD0		; Skip if RD0 is high (count)
     call    rd00
     
+    movlw   0x05
+    lfsr    FSR2 , 0x300
+    call    UART_Transmit_Message    
+    
     call    initialize_second	; Set V0, Vmax = 0 
     
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
     
-    movlw   0x30
-    cpfseq  PORTD
+    movlw   0x05
+    lfsr    FSR2 , 0x300
+    call    UART_Transmit_Message 
+    
+    ;movlw   0x04
+    ;cpfseq  PORTD
     bra     loop
     
-    movlw   0x30
-    call    UART_Transmit_Message    
-    movlw   0x30
-    call    UART_Transmit_Message    
-    movlw   0x30
-    call    UART_Transmit_Message    
+;    movlw   0x04
+;    call    UART_Transmit_Message    
+;    movlw   0x04
+;    call    UART_Transmit_Message    
+;    movlw   0x04
+;    call    UART_Transmit_Message    
     
-    bra loop
+;    bra loop
     
 rd00
     call    measure_loop		    ; Display time in LCD
@@ -139,7 +148,7 @@ store_data
     movff   y_max , POSTINC1
     movff   z_max , POSTINC1
     movff   PORTD , POSTINC1
-     ; Go until FSR = 0x900??
+  
     return
     
 initialize_second   
@@ -153,6 +162,7 @@ initialize_second
     movwf   x_max			; Set x_max for each second interval
     movwf   y_max			; Set y_max for each second interval
     movwf   z_max			; Set z_max for each second interval
+    lfsr    FSR1 , 0x300
 
     return
     
