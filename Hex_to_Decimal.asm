@@ -60,11 +60,11 @@ measure_loop		;displaying port d
 	
 	
 	movf hexvoltagelow,W
-	movwf 0x20
+	movwf 0x30
 	movf hexvoltagehigh,W
-	movwf 0x21
+	movwf 0x31
 	movlw 0x34
-	movwf 0x22
+	movwf 0x32
 	movlw 0x8A
 	movwf klow
 	movlw 0x41
@@ -75,29 +75,29 @@ measure_loop		;displaying port d
 	movf result3high,W
 	movwf voltage1
 	movf result3uppermiddle,W
-	movwf 0x22
+	movwf 0x32
 	movf result3lowermiddle,W
-	movwf 0x21
+	movwf 0x31
 	movf result3low, W
-	movwf 0x20
+	movwf 0x30
 	call multiply8by24
 	movf result3high,W
 	movwf voltage2
 	movf result3uppermiddle, W
-	movwf 0x22
+	movwf 0x32
 	movf result3lowermiddle, W
-	movwf 0x21
+	movwf 0x31
 	movf result3low, W
-	movwf 0x20
+	movwf 0x30
 	call multiply8by24
 	movf result3high,W
 	movwf voltage3
 	movf result3uppermiddle, W
-	movwf 0x22
+	movwf 0x32
 	movf result3lowermiddle, W
-	movwf 0x21
+	movwf 0x31
 	movf result3low, W
-	movwf 0x20
+	movwf 0x30
 	call multiply8by24
 	movf result3high,W
 	movwf voltage4
@@ -120,7 +120,7 @@ multiply8by24
 	movlw 0x0A
 	call multiply8by16
 	movlw 0x0A
-	mulwf 0x22
+	mulwf 0x32
 	movff PRODH, multiplicationhigh1
 	movff PRODL, multiplicationlow1
 	movff resultlow, result3low
@@ -174,10 +174,10 @@ multiply16by16
 	
 
 multiply8by16
-	mulwf 0x20
+	mulwf 0x30
 	movff PRODH, multiplicationhigh1
 	movff PRODL, multiplicationlow1
-	mulwf 0x21
+	mulwf 0x31
 	movff PRODH, multiplicationhigh2
 	movff PRODL, multiplicationlow2
 	movff multiplicationlow1, resultlow

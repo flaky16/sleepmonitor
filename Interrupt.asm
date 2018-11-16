@@ -74,7 +74,8 @@ start
     lfsr    FSR1 , 0x100
 
 ;loop
-;    
+;
+;   
 ;    call    initialize_1second
 ;    
 ;    btfss   PORTD, RD0		; Skip if RD0 is high (count)
@@ -87,40 +88,18 @@ start
 ;    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
 ;    call    rd01
 ;    
-;  ;  movlw   0x03
-;  ;  cpfsgt  PORTD 
+;    movlw   0x03
+;    cpfsgt  PORTD 
 ;    bra loop
 ;    
-    
-
-loop
-    call    initialize_second
-    
-    btfss   PORTD, RD0		; Skip if RD0 is high (count)
-    call    rd00
-    
-    call    initialize_second	; Set V0, Vmax = 0 
-    
-    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
-    call    rd01
-    
-  ;  movlw   0x03
-  ;  cpfsgt  PORTD 
-    bra loop
-    
-   ; movlw   .8
-    ;movwf   PORTF
-   ; lfsr    FSR2, myTable
-   ; call    UART_Transmit_Message    
-    
-    bra loop
-   ; movlw   .8
-    ;movwf   PORTF
-   ; lfsr    FSR2, myTable
-   ; call    UART_Transmit_Message    
-    
+;  
+;
+;    movlw   .8
+;    lfsr    FSR2, myTable
+;    call    UART_Transmit_Message    
 ;    
-;   ; bra loop
+;    
+;   bra loop
 ;rd00
 ;    call measure_loop		    ; Display time
 ;    
@@ -232,7 +211,7 @@ loop
 ;    
 ;    
 ;    end
-;
+
 
 
 ;	#include p18f87k22.inc
@@ -290,29 +269,29 @@ loop
 ;    movlw   0x00
 ;    movwf   TRISE
 ;    lfsr    FSR1 , 0x100    
-;
-;loop
-;    call    initialize_second
-;    
-;    btfss   PORTD, RD0		; Skip if RD0 is high (count)
-;    call    rd00
-;    
-;    call    initialize_second	; Set V0, Vmax = 0 
-;    
-;    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
-;    call    rd01
-;    
-;  ;  movlw   0x03
-;  ;  cpfsgt  PORTD 
-;    bra loop
-;    
-;   ; movlw   .8
-;    ;movwf   PORTF
-;   ; lfsr    FSR2, myTable
-;   ; call    UART_Transmit_Message    
-;    
-;    bra loop
-;    
+;;
+loop
+    call    initialize_second
+    
+    btfss   PORTD, RD0		; Skip if RD0 is high (count)
+    call    rd00
+    
+    call    initialize_second	; Set V0, Vmax = 0 
+    
+    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
+    call    rd01
+    
+    movlw   0x03
+    cpfsgt  PORTD 
+    bra loop
+    
+    movlw   .8
+    movwf   PORTF
+    lfsr    FSR2, myTable
+    call    UART_Transmit_Message    
+    
+    bra loop
+    
 rd00
     call    measure_loop		    ; Display time in LCD
 loop1sec0
