@@ -131,13 +131,7 @@ multiply8by24
 	movlw 0x0
 	addwfc multiplicationhigh1, 0, 0
 	movwf result3high
-	;call	LCD_Write_Hex
-	movf	result3uppermiddle,W
-	;call	LCD_Write_Hex
-	movf	result3lowermiddle,W
-	;call	LCD_Write_Hex
-	movf	result3low,W
-	;call	LCD_Write_Hex
+
 	return
 	
 multiply16by16
@@ -161,13 +155,7 @@ multiply16by16
 	movlw 0x0
 	addwfc result2high, 0, 0
 	movwf result3high
-	;call	LCD_Write_Hex
-	movf	result3uppermiddle,W
-	;call	LCD_Write_Hex
-	movf	result3lowermiddle,W
-	;call	LCD_Write_Hex
-	movf	result3low,W
-	;call	LCD_Write_Hex
+
 	return
 	
 	
@@ -187,12 +175,7 @@ multiply8by16
 	movlw 0x0
 	addwfc multiplicationhigh2, 0, 0
 	movwf resulthigh
-	movf	resulthigh,W
-	;call	LCD_Write_Hex
-	movf	resultmiddle,W
-	;call	LCD_Write_Hex
-	movf	resultlow,W
-	;call	LCD_Write_Hex
+
 	return
 	
 

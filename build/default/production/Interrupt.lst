@@ -1,4 +1,4 @@
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  1
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 000002 8E7F           00041         bsf     EECON1, EEPGD   ; access Flash program memory
 000004 EC?? F???      00042         call    UART_Setup      ; setup UART
 000008 EC?? F???      00043         call    LCD_Setup       ; setup LCD
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  2
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -96,155 +96,154 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 000046 B083           00074     btfsc   PORTD, RD0          ; Skip if RD0 is low (count)
 000048 EC?? F???      00075     call    rd01
                       00076     
-                      00077     
-00004C 0E40           00078     movlw   0x40
-00004E 6283           00079     cpfseq  PORTD
-000050 D???           00080     bra loop
-                      00081     
-000052 0E40           00082     movlw   0x40
-000054 EC?? F???      00083     call    UART_Transmit_Message    
-000058 0E40           00084     movlw   0x40
-00005A EC?? F???      00085     call    UART_Transmit_Message    
-00005E 0E40           00086     movlw   0x40
-000060 EC?? F???      00087     call    UART_Transmit_Message    
-                      00088     
-000064 D???           00089     bra loop
-                      00090     
-000066                00091 rd00
-000066 EC?? F???      00092     call    measure_loop                    ; Display time in LCD
-00006A                00093 loop1sec0
-00006A EC?? F???      00094     call    loop_operations
-00006E A083           00095     btfss   PORTD, RD0              ; Continue to loop until second has passed
-000070 D???           00096     bra     loop1sec0
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  3
+00004C 0E40           00077     movlw   0x40
+00004E 6283           00078     cpfseq  PORTD
+000050 D???           00079     bra     loop
+                      00080     
+000052 0E40           00081     movlw   0x40
+000054 EC?? F???      00082     call    UART_Transmit_Message    
+000058 0E40           00083     movlw   0x40
+00005A EC?? F???      00084     call    UART_Transmit_Message    
+00005E 0E40           00085     movlw   0x40
+000060 EC?? F???      00086     call    UART_Transmit_Message    
+                      00087     
+000064 D???           00088     bra loop
+                      00089     
+000066                00090 rd00
+000066 EC?? F???      00091     call    measure_loop                    ; Display time in LCD
+00006A                00092 loop1sec0
+00006A EC?? F???      00093     call    loop_operations
+00006E A083           00094     btfss   PORTD, RD0              ; Continue to loop until second has passed
+000070 D???           00095     bra     loop1sec0
+000072 EC?? F???      00096     call    store_data
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000072 EC?? F???      00097     call    store_data
-                      00098      
-000076 C??? FF84      00099     movff   y_max , PORTE
-00007A 0012           00100     return
-                      00101    
+                      00097      
+000076 C??? FF84      00098     movff   y_max , PORTE
+00007A 0012           00099     return
+                      00100    
 Warning[207]: Found label after column 1. (rd01)
-00007C                00102  rd01
-00007C EC?? F???      00103     call measure_loop   
+00007C                00101  rd01
+00007C EC?? F???      00102     call measure_loop   
 Warning[207]: Found label after column 1. (loop1sec1)
-000080                00104  loop1sec1                          ; Same loop as loop1sec0 
-000080 EC?? F???      00105     call    loop_operations
-000084 B083           00106     btfsc   PORTD, RD0              ; Continue to loop until second has passed
-000086 D???           00107     bra     loop1sec1
-000088 EC?? F???      00108     call    store_data
-                      00109     
-00008C C??? FF84      00110     movff   z_max , PORTE
-000090 0012           00111     return
-                      00112     
-000092                00113 loop_operations
-                      00114     
-000092 EC?? F???      00115     call    Read_x                  ; Get 8-bit number for x at time t
-000096 50??           00116     movf    x_0 , W
-000098 EC?? F???      00117     call    find_difference         ; Get deviation from x_0
-00009C CFC3 F???      00118     movff   ADRESL , x_t            ; The difference is stored
-0000A0 EC?? F???      00119     call    update_x_max            ; Check if x_t > x_max for 1 second interval
-                      00120 
-0000A4 EC?? F???      00121     call    Read_y                  ; Get 8-bit number for y at time t
-0000A8 50??           00122     movf    y_0 , W
-0000AA EC?? F???      00123     call    find_difference         ; Get deviation from y_0
-0000AE CFC3 F???      00124     movff   ADRESL , y_t            ; The difference is stored
-0000B2 EC?? F???      00125     call    update_y_max            ; Check if y_t > y_max for 1 second interval
-                      00126 
-0000B6 EC?? F???      00127     call    Read_y                  ; Get 8-bit number for z at time t
-0000BA 50??           00128     movf    z_0 , W
-0000BC EC?? F???      00129     call    find_difference         ; Get deviation from z_0
-0000C0 CFC3 F???      00130     movff   ADRESL , z_t            ; The difference is stored
-0000C4 EC?? F???      00131     call    update_z_max            ; Check if z_t > z_max for 1 second interval
-                      00132     
-0000C8 0012           00133     return
-                      00134     
-0000CA                00135 store_data
-                      00136     ; Store maximum data and the time:
-0000CA C??? FFE6      00137     movff   x_max , POSTINC1
-0000CE C??? FFE6      00138     movff   y_max , POSTINC1
-0000D2 C??? FFE6      00139     movff   z_max , POSTINC1
-0000D6 CF83 FFE6      00140     movff   PORTD , POSTINC1
-                      00141      ; Go until FSR = 0x900??
-0000DA 0012           00142     return
-                      00143     
-0000DC                00144 initialize_second   
-0000DC EC?? F???      00145     call    Read_x
-0000E0 CFC3 F???      00146     movff   ADRESL , x_0                ; Set x_0 for each second interval
-0000E4 EC?? F???      00147     call    Read_y
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  4
+000080                00103  loop1sec1                          ; Same loop as loop1sec0 
+000080 EC?? F???      00104     call    loop_operations
+000084 B083           00105     btfsc   PORTD, RD0              ; Continue to loop until second has passed
+000086 D???           00106     bra     loop1sec1
+000088 EC?? F???      00107     call    store_data
+                      00108     
+00008C C??? FF84      00109     movff   z_max , PORTE
+000090 0012           00110     return
+                      00111     
+000092                00112 loop_operations
+                      00113     
+000092 EC?? F???      00114     call    Read_x                  ; Get 8-bit number for x at time t
+000096 50??           00115     movf    x_0 , W
+000098 EC?? F???      00116     call    find_difference         ; Get deviation from x_0
+00009C CFC3 F???      00117     movff   ADRESL , x_t            ; The difference is stored
+0000A0 EC?? F???      00118     call    update_x_max            ; Check if x_t > x_max for 1 second interval
+                      00119 
+0000A4 EC?? F???      00120     call    Read_y                  ; Get 8-bit number for y at time t
+0000A8 50??           00121     movf    y_0 , W
+0000AA EC?? F???      00122     call    find_difference         ; Get deviation from y_0
+0000AE CFC3 F???      00123     movff   ADRESL , y_t            ; The difference is stored
+0000B2 EC?? F???      00124     call    update_y_max            ; Check if y_t > y_max for 1 second interval
+                      00125 
+0000B6 EC?? F???      00126     call    Read_y                  ; Get 8-bit number for z at time t
+0000BA 50??           00127     movf    z_0 , W
+0000BC EC?? F???      00128     call    find_difference         ; Get deviation from z_0
+0000C0 CFC3 F???      00129     movff   ADRESL , z_t            ; The difference is stored
+0000C4 EC?? F???      00130     call    update_z_max            ; Check if z_t > z_max for 1 second interval
+                      00131     
+0000C8 0012           00132     return
+                      00133     
+0000CA                00134 store_data
+                      00135     ; Store maximum data and the time:
+0000CA C??? FFE6      00136     movff   x_max , POSTINC1
+0000CE C??? FFE6      00137     movff   y_max , POSTINC1
+0000D2 C??? FFE6      00138     movff   z_max , POSTINC1
+0000D6 CF83 FFE6      00139     movff   PORTD , POSTINC1
+                      00140      ; Go until FSR = 0x900??
+0000DA 0012           00141     return
+                      00142     
+0000DC                00143 initialize_second   
+0000DC EC?? F???      00144     call    Read_x
+0000E0 CFC3 F???      00145     movff   ADRESL , x_0                ; Set x_0 for each second interval
+0000E4 EC?? F???      00146     call    Read_y
+0000E8 CFC3 F???      00147     movff   ADRESL , y_0                ; Set y_0 for each second interval
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0000E8 CFC3 F???      00148     movff   ADRESL , y_0                ; Set y_0 for each second interval
-0000EC EC?? F???      00149     call    Read_z
-0000F0 CFC3 F???      00150     movff   ADRESL , z_0                ; Set z_0 for each second interval
-0000F4 0E00           00151     movlw   0x00
-0000F6 6E??           00152     movwf   x_max                       ; Set x_max for each second interval
-0000F8 6E??           00153     movwf   y_max                       ; Set y_max for each second interval
-0000FA 6E??           00154     movwf   z_max                       ; Set z_max for each second interval
-                      00155 
-0000FC 0012           00156     return
-                      00157     
-0000FE                00158 subtraction                             ; If x_0 > x_t -> subtract x_t from x_0 (in W)
-0000FE 6E??           00159     movwf   temporary                   ; Store x_0 in temporary location
-000100 50C3           00160     movf    ADRESL, W               
-000102 5C00           00161     subwf   temporary, 0                ; Subtr. x_t from x_0, store result in W
-000104 6EC3           00162     movwf   ADRESL                      ; Put difference into ADRESL
-000106 0012           00163     return
-                      00164     
-000108                00165 find_difference    ; x_0/y_0/z_0 recorded in W  , returns difference in ADRESL
-000108 62C3           00166     cpfseq  ADRESL
-00010A D???           00167     bra     not_equal
-00010C D???           00168     bra     if_equal
+0000EC EC?? F???      00148     call    Read_z
+0000F0 CFC3 F???      00149     movff   ADRESL , z_0                ; Set z_0 for each second interval
+0000F4 0E00           00150     movlw   0x00
+0000F6 6E??           00151     movwf   x_max                       ; Set x_max for each second interval
+0000F8 6E??           00152     movwf   y_max                       ; Set y_max for each second interval
+0000FA 6E??           00153     movwf   z_max                       ; Set z_max for each second interval
+                      00154 
+0000FC 0012           00155     return
+                      00156     
+0000FE                00157 subtraction                             ; If x_0 > x_t -> subtract x_t from x_0 (in W)
+0000FE 6E??           00158     movwf   temporary                   ; Store x_0 in temporary location
+000100 50C3           00159     movf    ADRESL, W               
+000102 5C00           00160     subwf   temporary, 0                ; Subtr. x_t from x_0, store result in W
+000104 6EC3           00161     movwf   ADRESL                      ; Put difference into ADRESL
+000106 0012           00162     return
+                      00163     
+000108                00164 find_difference    ; x_0/y_0/z_0 recorded in W  , returns difference in ADRESL
+000108 62C3           00165     cpfseq  ADRESL
+00010A D???           00166     bra     not_equal
+00010C D???           00167     bra     if_equal
 Warning[207]: Found label after column 1. (not_equal)
-00010E                00169  not_equal
-00010E 64C3           00170     cpfsgt  ADRESL
-000110 EC?? F???      00171     call    subtraction
-                      00172     
-000114 60C3           00173     cpfslt  ADRESL
-000116 5EC3           00174     subwf   ADRESL, 1
-000118 D???           00175     bra     jump_equal
-                      00176  
-00011A                00177 if_equal
-00011A 0E00           00178     movlw   0x00
-00011C 6EC3           00179     movwf   ADRESL
-                      00180     
-00011E                00181 jump_equal
-                      00182     
-00011E 0012           00183     return
-                      00184     
-000120                00185 update_x_max
-000120 50??           00186     movf    x_t , W
-000122 64??           00187     cpfsgt  x_max                   ; Compare if current difference is higher than the max differennce
-000124 C??? F???      00188     movff   x_t , x_max             ; Update x_max for this 1 sec interval
-000128 0012           00189     return    
-                      00190     
-00012A                00191 update_y_max
-00012A 50??           00192     movf    y_t , W
-00012C 64??           00193     cpfsgt  y_max                   ; Compare if current difference is higher than the max differennce
-00012E C??? F???      00194     movff   y_t , y_max             ; Update y_max for this 1 sec interval
-000132 0012           00195     return    
-                      00196 
-000134                00197 update_z_max
-000134 50??           00198     movf    z_t , W
-000136 64??           00199     cpfsgt  z_max                   ; Compare if current difference is higher than the max differennce
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  5
+00010E                00168  not_equal
+00010E 64C3           00169     cpfsgt  ADRESL
+000110 EC?? F???      00170     call    subtraction
+                      00171     
+000114 60C3           00172     cpfslt  ADRESL
+000116 5EC3           00173     subwf   ADRESL, 1
+000118 D???           00174     bra     jump_equal
+                      00175  
+00011A                00176 if_equal
+00011A 0E00           00177     movlw   0x00
+00011C 6EC3           00178     movwf   ADRESL
+                      00179     
+00011E                00180 jump_equal
+                      00181     
+00011E 0012           00182     return
+                      00183     
+000120                00184 update_x_max
+000120 50??           00185     movf    x_t , W
+000122 64??           00186     cpfsgt  x_max                   ; Compare if current difference is higher than the max differennce
+000124 C??? F???      00187     movff   x_t , x_max             ; Update x_max for this 1 sec interval
+000128 0012           00188     return    
+                      00189     
+00012A                00190 update_y_max
+00012A 50??           00191     movf    y_t , W
+00012C 64??           00192     cpfsgt  y_max                   ; Compare if current difference is higher than the max differennce
+00012E C??? F???      00193     movff   y_t , y_max             ; Update y_max for this 1 sec interval
+000132 0012           00194     return    
+                      00195 
+000134                00196 update_z_max
+000134 50??           00197     movf    z_t , W
+000136 64??           00198     cpfsgt  z_max                   ; Compare if current difference is higher than the max differennce
+000138 C??? F???      00199     movff   z_t , z_max             ; Update z_max for this 1 sec interval
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000138 C??? F???      00200     movff   z_t , z_max             ; Update z_max for this 1 sec interval
-00013C 0012           00201     return    
-                      00202     
-                      00203     end
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  6
+00013C 0012           00200     return    
+                      00201     
+                      00202     end
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  6
 
 
 SYMBOL TABLE
@@ -303,7 +302,7 @@ ADMSK4                            00000004
 ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  7
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  7
 
 
 SYMBOL TABLE
@@ -362,7 +361,7 @@ ANSEL15                           00000007
 ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  8
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  8
 
 
 SYMBOL TABLE
@@ -421,7 +420,7 @@ C1OUT                             00000002
 C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE  9
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE  9
 
 
 SYMBOL TABLE
@@ -480,7 +479,7 @@ CCP1IF                            00000001
 CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 10
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 10
 
 
 SYMBOL TABLE
@@ -539,7 +538,7 @@ CCP5IP                            00000002
 CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 11
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 11
 
 
 SYMBOL TABLE
@@ -598,7 +597,7 @@ CCP9IF                            00000006
 CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 12
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 12
 
 
 SYMBOL TABLE
@@ -657,7 +656,7 @@ CHSN0                             00000000
 CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 13
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 13
 
 
 SYMBOL TABLE
@@ -716,7 +715,7 @@ CTMUICON                          00000F55
 CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 14
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 14
 
 
 SYMBOL TABLE
@@ -775,7 +774,7 @@ ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 15
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 15
 
 
 SYMBOL TABLE
@@ -834,7 +833,7 @@ FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 16
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 16
 
 
 SYMBOL TABLE
@@ -893,7 +892,7 @@ INT3                              00000003
 INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 17
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 17
 
 
 SYMBOL TABLE
@@ -952,7 +951,7 @@ LATB5                             00000005
 LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 18
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 18
 
 
 SYMBOL TABLE
@@ -1011,7 +1010,7 @@ LATJ                              00000F91
 LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 19
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 19
 
 
 SYMBOL TABLE
@@ -1070,7 +1069,7 @@ NOT_WR                            00000001
 NOT_WRITE                         00000002
 OBF                               00000006
 ODCON1                            00000F29
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 20
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 20
 
 
 SYMBOL TABLE
@@ -1129,7 +1128,7 @@ P3DC2                             00000002
 P3DC3                             00000003
 P3DC4                             00000004
 P3DC5                             00000005
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 21
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 21
 
 
 SYMBOL TABLE
@@ -1188,7 +1187,7 @@ PORTF                             00000F85
 PORTG                             00000F86
 PORTH                             00000F87
 PORTJ                             00000F88
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 22
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 22
 
 
 SYMBOL TABLE
@@ -1247,7 +1246,7 @@ PWM2CON                           00000F51
 R                                 00000002
 RA0                               00000000
 RA1                               00000001
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 23
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 23
 
 
 SYMBOL TABLE
@@ -1306,7 +1305,7 @@ RD1                               00000001
 RD16                              00000001
 RD2                               00000002
 RD3                               00000003
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 24
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 24
 
 
 SYMBOL TABLE
@@ -1365,7 +1364,7 @@ RODIV0                            00000000
 RODIV1                            00000001
 RODIV2                            00000002
 RODIV3                            00000003
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 25
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 25
 
 
 SYMBOL TABLE
@@ -1424,7 +1423,7 @@ SDO1                              00000005
 SDO2                              00000004
 SEN                               00000000
 SENDB                             00000003
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 26
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 26
 
 
 SYMBOL TABLE
@@ -1483,7 +1482,7 @@ SSPBUF                            00000FC9
 SSPCON1                           00000FC6
 SSPCON2                           00000FC5
 SSPEN                             00000005
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 27
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 27
 
 
 SYMBOL TABLE
@@ -1542,7 +1541,7 @@ T1CKI                             00000005
 T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000FCD
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 28
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 28
 
 
 SYMBOL TABLE
@@ -1601,7 +1600,7 @@ T5GSS1                            00000001
 T5GTM                             00000005
 T5GVAL                            00000002
 T6CKPS0                           00000000
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 29
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 29
 
 
 SYMBOL TABLE
@@ -1660,7 +1659,7 @@ TMR12IF                           00000006
 TMR12IP                           00000006
 TMR12MD                           00000000
 TMR12ON                           00000002
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 30
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 30
 
 
 SYMBOL TABLE
@@ -1719,7 +1718,7 @@ TMR5IP                            00000001
 TMR5L                             00000F7C
 TMR5MD                            00000003
 TMR5ON                            00000000
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 31
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 31
 
 
 SYMBOL TABLE
@@ -1778,7 +1777,7 @@ TRISB6                            00000006
 TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 32
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 32
 
 
 SYMBOL TABLE
@@ -1837,7 +1836,7 @@ TRISJ0                            00000000
 TRISJ1                            00000001
 TRISJ2                            00000002
 TRISJ3                            00000003
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 33
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 33
 
 
 SYMBOL TABLE
@@ -1896,7 +1895,7 @@ UB                                00000007
 ULPEN                             00000002
 ULPLVL                            00000005
 ULPSINK                           00000001
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 34
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 34
 
 
 SYMBOL TABLE
@@ -1955,7 +1954,7 @@ _CONFIG3L                         00300004
 _CONFIG4L                         00300006
 _CONFIG5H                         00300009
 _CONFIG5L                         00300008
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 35
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 35
 
 
 SYMBOL TABLE
@@ -2014,7 +2013,7 @@ _ECCPMX_PORTH_3H                  000000FD
 _FCMEN_OFF_1H                     000000BF
 _FCMEN_ON_1H                      000000FF
 _FOSC_EC1IO_1H                    000000FC
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 36
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 36
 
 
 SYMBOL TABLE
@@ -2073,7 +2072,7 @@ _WDTPS_1048576_2H                 000000FF
 _WDTPS_128_2H                     0000009F
 _WDTPS_131072_2H                  000000C7
 _WDTPS_16384_2H                   000000BB
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 37
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 37
 
 
 SYMBOL TABLE
@@ -2132,7 +2131,7 @@ loop_operations                   00000092
 measure_loop                      00000000
 not_equal                         0000010E
 rd00                              00000066
-MPASM 5.81                     INTERRUPT.ASM   11-16-2018  12:55:08         PAGE 38
+MPASM 5.81                     INTERRUPT.ASM   11-16-2018  13:35:16         PAGE 38
 
 
 SYMBOL TABLE
