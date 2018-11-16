@@ -1,4 +1,4 @@
-
+;
 
 	#include p18f87k22.inc
 
@@ -10,16 +10,22 @@
 	
 acs0	udata_acs	
 check1sec res 1
-
+temporary   res 1
 x_0	res 1
-y_0	res 1
-z_0_H	res 1
-z_0_L	res 1
-	
-
+z_0   res 1
+	y_0  res 1
 x_t	res 1
+y_t	res 1
+z_t	res 1
 
 x_max	res 1
+y_max	res 1
+z_max	res 1	
+
+
+;x_t	res 1
+;
+;x_max	res 1
 ;max_values  res 0x40
 	
 ;tables	udata	0x400    ; reserve data anywhere in RAM (here at 0x400)
@@ -67,17 +73,34 @@ start
     movwf   PORTF
     lfsr    FSR1 , 0x100
 
-loop
+;loop
+;    
+;    call    initialize_1second
+;    
+;    btfss   PORTD, RD0		; Skip if RD0 is high (count)
+;    call    rd00
+;    
+;    
+;    call    initialize_1second	; Set V0, Vmax = 0 
+;    
+;
+;    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
+;    call    rd01
+;    
+;  ;  movlw   0x03
+;  ;  cpfsgt  PORTD 
+;    bra loop
+;    
     
-    call    initialize_1second
+
+loop
+    call    initialize_second
     
     btfss   PORTD, RD0		; Skip if RD0 is high (count)
     call    rd00
     
+    call    initialize_second	; Set V0, Vmax = 0 
     
-    call    initialize_1second	; Set V0, Vmax = 0 
-    
-
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
     
@@ -90,132 +113,126 @@ loop
    ; lfsr    FSR2, myTable
    ; call    UART_Transmit_Message    
     
-    
     bra loop
-rd00
-    call measure_loop		    ; Display time
+   ; movlw   .8
+    ;movwf   PORTF
+   ; lfsr    FSR2, myTable
+   ; call    UART_Transmit_Message    
     
-loop1sec0
-    call    Read_x		    ; Get 8-bit number for x current
-   
-    movf    x_0 , W
-    cpfseq  ADRESL
-    bra there
-    
-    bra here
- there
-    movf    x_0 , W	
-    
-    cpfsgt  ADRESL
-    call    subtraction
-    
-    cpfslt  ADRESL
-    subwf   ADRESL, 1
-    
-    
-    bra later
-    
-here
-    movlw   0x00
-    movwf   ADRESL
-    
-later
-    
-    movff   ADRESL , x_t	    ; The difference is stored
-  
-    movf   x_t , W
-    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
-    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
-    
-    
-
-    btfss   PORTD, RD0
-    bra loop1sec0
-    
-    movff   x_max , POSTINC1
-    movff   PORTD , POSTINC1
-    
-    movff   x_max , PORTE
-    
-    return
-   
- rd01
- 
-    call measure_loop
-    
- loop1sec1
-    call    Read_x		    ; Get 8-bit number for x current
-   
-    movf    x_0 , W
-    cpfseq  ADRESL
-    bra there1
-    bra here1
- there1
-    movf    x_0 , W	
-    
-    cpfsgt  ADRESL
-    call    subtraction
-    
-    cpfslt  ADRESL
-    subwf   ADRESL, 1
-    
-    
-    bra later1
-    
-here1
-    movlw   0x00
-    movwf   ADRESL
-    
-later1
-    
-    movff   ADRESL , x_t	    ; The difference is stored
-  
-    movf   x_t , W
-    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
-    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
-   
-
-    btfsc   PORTD, RD0
-    bra loop1sec1
-    
-    movff   x_max , POSTINC1
-    movff   PORTD , POSTINC1
-    
-    movff   x_max , PORTE
-    
-    return
-    
-    
-initialize_1second   
-    call    Read_x
-    movff   ADRESL , x_0
-    movlw   0x00
-    movwf   x_max
-
-
-    return
-    
-subtraction
-    movf    ADRESL, W
-    subwf   x_0, 0
-    movwf   ADRESL
-    return
-    
-    ;    movff   x_0_H , W
-;    subwf   ADRESH
+;    
+;   ; bra loop
+;rd00
+;    call measure_loop		    ; Display time
+;    
+;loop1sec0
+;    call    Read_x		    ; Get 8-bit number for x current
 ;   
-;    movff   x_0_L  , W	    
-;    subwf   ADRESL		; Take difference with initial Vx
-;    movff   ADRESL , x_t_L	 ; store difference
-;    movff   x_t_L , W
+;    movf    x_0 , W
+;    cpfseq  ADRESL
+;    bra there
 ;    
-;    cpfsgt  x_max_L		 ; Compare if current difference is higher than the max differennce
-;    movff   x_t_L , x_max_L	; Update x_max for this 1 sec interval
+;    bra here
+; there
+;    movf    x_0 , W	
 ;    
-    
-    end
-
-
+;    cpfsgt  ADRESL
+;    call    subtraction
+;    
+;    cpfslt  ADRESL
+;    subwf   ADRESL, 1
+;    
+;    
+;    bra later
+;    
+;here
+;    movlw   0x00
+;    movwf   ADRESL
+;    
+;later
+;    
+;    movff   ADRESL , x_t	    ; The difference is stored
+;  
+;    movf   x_t , W
+;    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
+;    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
+;    
+;    
+;
+;    btfss   PORTD, RD0
+;    bra loop1sec0
+;    
+;    movff   x_max , POSTINC1
+;    movff   PORTD , POSTINC1
+;    
+;    movff   x_max , PORTE
+;    
+;    return
+;   
+; rd01
+; 
+;    call measure_loop
+;    
+; loop1sec1
+;    call    Read_x		    ; Get 8-bit number for x current
+;   
+;    movf    x_0 , W
+;    cpfseq  ADRESL
+;    bra there1
+;    bra here1
+; there1
+;    movf    x_0 , W	
+;    
+;    cpfsgt  ADRESL
+;    call    subtraction
+;    
+;    cpfslt  ADRESL
+;    subwf   ADRESL, 1
+;    
+;    
+;    bra later1
+;    
+;here1
+;    movlw   0x00
+;    movwf   ADRESL
+;    
+;later1
+;    
+;    movff   ADRESL , x_t	    ; The difference is stored
+;  
+;    movf   x_t , W
+;    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
+;    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
+;   
+;
+;    btfsc   PORTD, RD0
+;    bra loop1sec1
+;    
+;    movff   x_max , POSTINC1
+;    movff   PORTD , POSTINC1
+;    
+;    movff   x_max , PORTE
+;    
+;    return
+;    
+;    
+;initialize_1second   
+;    call    Read_x
+;    movff   ADRESL , x_0
+;    movlw   0x00
+;    movwf   x_max
+;
+;
+;    return
+;    
+;subtraction
+;    movf    ADRESL, W
+;    subwf   x_0, 0
+;    movwf   ADRESL
+;    return
+;    
+;    
+;    end
+;
 
 
 ;	#include p18f87k22.inc
@@ -296,116 +313,116 @@ subtraction
 ;    
 ;    bra loop
 ;    
-;rd00
-;    call    measure_loop		    ; Display time in LCD
-;loop1sec0
-;    call    loop_operations
-;    btfss   PORTD, RD0		    ; Continue to loop until second has passed
-;    bra	    loop1sec0
-;    call    store_data
-;     
-;    movff   x_max , PORTE
-;    return
-;   
-; rd01
-;    call measure_loop   
-; loop1sec1			    ; Same loop as loop1sec0 
-;    call    loop_operations
-;    btfsc   PORTD, RD0		    ; Continue to loop until second has passed
-;    bra	    loop1sec1
-;    call    store_data
-;    
-;    movff   x_max , PORTE
-;    return
-;    
-;loop_operations
-;    
-;    call    Read_x		    ; Get 8-bit number for x at time t
-;    movf    x_0 , W
-;    call    find_difference	    ; Get deviation from x_0
-;    movff   ADRESL , x_t	    ; The difference is stored
-;    call    update_x_max	    ; Check if x_t > x_max for 1 second interval
-;
-;    call    Read_y		    ; Get 8-bit number for y at time t
-;    movf    y_0 , W
-;    call    find_difference	    ; Get deviation from y_0
-;    movff   ADRESL , y_t	    ; The difference is stored
-;    call    update_y_max	    ; Check if y_t > y_max for 1 second interval
-;
-;    call    Read_y		    ; Get 8-bit number for z at time t
-;    movf    z_0 , W
-;    call    find_difference	    ; Get deviation from z_0
-;    movff   ADRESL , z_t	    ; The difference is stored
-;    call    update_z_max	    ; Check if z_t > z_max for 1 second interval
-;    
-;    return
-;    
-;store_data
-;    ; Store maximum data and the time:
-;    movff   x_max , POSTINC1
-;    movff   y_max , POSTINC1
-;    movff   z_max , POSTINC1
-;    movff   PORTD , POSTINC1
-;     ; Go until FSR = 0x900??
-;    return
-;    
-;initialize_second   
-;    call    Read_x
-;    movff   ADRESL , x_0		; Set x_0 for each second interval
-;    call    Read_y
-;    movff   ADRESL , y_0		; Set y_0 for each second interval
-;    call    Read_z
-;    movff   ADRESL , z_0		; Set z_0 for each second interval
-;    movlw   0x00
-;    movwf   x_max			; Set x_max for each second interval
-;    movwf   y_max			; Set y_max for each second interval
-;    movwf   z_max			; Set z_max for each second interval
-;
-;    return
-;    
-;subtraction				; If x_0 > x_t -> subtract x_t from x_0 (in W)
-;    movwf   temporary			; Store x_0 in temporary location
-;    movf    ADRESL, W		    
-;    subwf   temporary, 0		; Subtr. x_t from x_0, store result in W
-;    movwf   ADRESL			; Put difference into ADRESL
-;    return
-;    
-;find_difference    ; x_0/y_0/z_0 recorded in W  , returns difference in ADRESL
-;    cpfseq  ADRESL
-;    bra	    not_equal
-;    bra	    if_equal
-; not_equal
-;    cpfsgt  ADRESL
-;    call    subtraction
-;    
-;    cpfslt  ADRESL
-;    subwf   ADRESL, 1
-;    bra	    jump_equal
-; 
-;if_equal
-;    movlw   0x00
-;    movwf   ADRESL
-;    
-;jump_equal
-;    
-;    return
-;    
-;update_x_max
-;    movf    x_t , W
-;    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
-;    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
-;    return    
-;    
-;update_y_max
-;    movf    y_t , W
-;    cpfsgt  y_max		    ; Compare if current difference is higher than the max differennce
-;    movff   y_t , y_max		    ; Update y_max for this 1 sec interval
-;    return    
-;
-;update_z_max
-;    movf    z_t , W
-;    cpfsgt  z_max		    ; Compare if current difference is higher than the max differennce
-;    movff   z_t , z_max		    ; Update z_max for this 1 sec interval
-;    return    
-;    
-;    end
+rd00
+    call    measure_loop		    ; Display time in LCD
+loop1sec0
+    call    loop_operations
+    btfss   PORTD, RD0		    ; Continue to loop until second has passed
+    bra	    loop1sec0
+    call    store_data
+     
+    movff   y_max , PORTE
+    return
+   
+ rd01
+    call measure_loop   
+ loop1sec1			    ; Same loop as loop1sec0 
+    call    loop_operations
+    btfsc   PORTD, RD0		    ; Continue to loop until second has passed
+    bra	    loop1sec1
+    call    store_data
+    
+    movff   z_max , PORTE
+    return
+    
+loop_operations
+    
+    call    Read_x		    ; Get 8-bit number for x at time t
+    movf    x_0 , W
+    call    find_difference	    ; Get deviation from x_0
+    movff   ADRESL , x_t	    ; The difference is stored
+    call    update_x_max	    ; Check if x_t > x_max for 1 second interval
+
+    call    Read_y		    ; Get 8-bit number for y at time t
+    movf    y_0 , W
+    call    find_difference	    ; Get deviation from y_0
+    movff   ADRESL , y_t	    ; The difference is stored
+    call    update_y_max	    ; Check if y_t > y_max for 1 second interval
+
+    call    Read_y		    ; Get 8-bit number for z at time t
+    movf    z_0 , W
+    call    find_difference	    ; Get deviation from z_0
+    movff   ADRESL , z_t	    ; The difference is stored
+    call    update_z_max	    ; Check if z_t > z_max for 1 second interval
+    
+    return
+    
+store_data
+    ; Store maximum data and the time:
+    movff   x_max , POSTINC1
+    movff   y_max , POSTINC1
+    movff   z_max , POSTINC1
+    movff   PORTD , POSTINC1
+     ; Go until FSR = 0x900??
+    return
+    
+initialize_second   
+    call    Read_x
+    movff   ADRESL , x_0		; Set x_0 for each second interval
+    call    Read_y
+    movff   ADRESL , y_0		; Set y_0 for each second interval
+    call    Read_z
+    movff   ADRESL , z_0		; Set z_0 for each second interval
+    movlw   0x00
+    movwf   x_max			; Set x_max for each second interval
+    movwf   y_max			; Set y_max for each second interval
+    movwf   z_max			; Set z_max for each second interval
+
+    return
+    
+subtraction				; If x_0 > x_t -> subtract x_t from x_0 (in W)
+    movwf   temporary			; Store x_0 in temporary location
+    movf    ADRESL, W		    
+    subwf   temporary, 0		; Subtr. x_t from x_0, store result in W
+    movwf   ADRESL			; Put difference into ADRESL
+    return
+    
+find_difference    ; x_0/y_0/z_0 recorded in W  , returns difference in ADRESL
+    cpfseq  ADRESL
+    bra	    not_equal
+    bra	    if_equal
+ not_equal
+    cpfsgt  ADRESL
+    call    subtraction
+    
+    cpfslt  ADRESL
+    subwf   ADRESL, 1
+    bra	    jump_equal
+ 
+if_equal
+    movlw   0x00
+    movwf   ADRESL
+    
+jump_equal
+    
+    return
+    
+update_x_max
+    movf    x_t , W
+    cpfsgt  x_max		    ; Compare if current difference is higher than the max differennce
+    movff   x_t , x_max		    ; Update x_max for this 1 sec interval
+    return    
+    
+update_y_max
+    movf    y_t , W
+    cpfsgt  y_max		    ; Compare if current difference is higher than the max differennce
+    movff   y_t , y_max		    ; Update y_max for this 1 sec interval
+    return    
+
+update_z_max
+    movf    z_t , W
+    cpfsgt  z_max		    ; Compare if current difference is higher than the max differennce
+    movff   z_t , z_max		    ; Update z_max for this 1 sec interval
+    return    
+    
+    end

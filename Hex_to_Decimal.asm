@@ -38,13 +38,6 @@ voltage2 res 1
 voltage3 res 1
 voltage4 res 1
  
-;rst	code	0    ; reset vector
-	;goto	setup
-
-;pdata	code    ; a section of programme memory for storing data
-	; ******* myTable, data in programme memory, and its length *****
-;myTable data	    "Hello World!\n"	; message, plus carriage return
-	;;constant    myTable_l=.2	; length of data
 	
 hex	code
 	; ******* Programme FLASH read Setup Code ***********************
