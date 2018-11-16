@@ -21,7 +21,9 @@ z_t	res 1
 
 x_max	res 1
 y_max	res 1
-z_max	res 1	
+z_max	res 1
+	
+values	res 120
 
 
 rst	code	0    ; reset vector
@@ -59,8 +61,8 @@ start
     movwf   TRISF
     movlw   0x00
     movwf   PORTD
-    lfsr    FSR1 , 0x400
-    lfsr    FSR2 , 0x400
+    lfsr    FSR1 , values
+    lfsr    FSR2 , values
 
 
 loop
@@ -74,15 +76,15 @@ loop
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
     
-    movlw   0x40
+    movlw   0x30
     cpfseq  PORTD
     bra     loop
     
-    movlw   0x40
+    movlw   0x30
     call    UART_Transmit_Message    
-    movlw   0x40
+    movlw   0x30
     call    UART_Transmit_Message    
-    movlw   0x40
+    movlw   0x30
     call    UART_Transmit_Message    
     
     bra loop

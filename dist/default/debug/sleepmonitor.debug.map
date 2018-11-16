@@ -1,5 +1,5 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Fri Nov 16 13:12:37 2018
+Linker Map File - Created Fri Nov 16 14:33:48 2018
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -8,10 +8,10 @@ Linker Map File - Created Fri Nov 16 13:12:37 2018
                    .cinit    romdata   0x000004    program   0x000002
                    int_hi       code   0x000008    program   0x00000a
                      main       code   0x000012    program   0x00013e
-                      hex       code   0x000150    program   0x00012e
-                      LCD       code   0x00027e    program   0x00011e
-                      ADC       code   0x00039c    program   0x0000b0
-                     UART       code   0x00044c    program   0x000028
+                      LCD       code   0x000150    program   0x00011e
+                      hex       code   0x00026e    program   0x00011c
+                      ADC       code   0x00038a    program   0x0000b0
+                     UART       code   0x00043a    program   0x000028
 .config_300000_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300000    program   0x000001
 .config_300001_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300001    program   0x000001
 .config_300002_BUILD/DEFAULT/DEBUG/CONFIG.O    romdata   0x300002    program   0x000001
@@ -34,59 +34,59 @@ Linker Map File - Created Fri Nov 16 13:12:37 2018
                                Start         End      
                            ---------   ---------      
                             0x000000    0x000005      
-                            0x000008    0x000473      
+                            0x000008    0x000461      
                             0x300000    0x300006      
                             0x300008    0x30000d      
-            1151 out of 132120 program addresses used, program memory utilization is 0%
+            1133 out of 132120 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                ADC_Setup   0x00039c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                Hex_setup   0x000150    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-               LCD_Enable   0x00034c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-              LCD_Hex_Nib   0x0002ec    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-         LCD_Loop_message   0x000302    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-          LCD_Send_Byte_D   0x00032a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-          LCD_Send_Byte_I   0x00030e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-             LCD_Send_Nib   0x00031c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                LCD_Setup   0x00027e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                  LCD_Top   0x0002d4    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-            LCD_Write_Hex   0x0002e2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-        LCD_Write_Message   0x000300    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                LCD_delay   0x000392    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-             LCD_delay_ms   0x000370    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-           LCD_delay_x4us   0x00037e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                   Read_x   0x0003b2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   Read_y   0x0003be    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   Read_z   0x0003ca    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-        UART_Loop_message   0x000460    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-               UART_Setup   0x00044c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-       UART_Transmit_Byte   0x00046c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-    UART_Transmit_Message   0x00045e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-                 adc_loop   0x0003d6    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                    delay   0x000278    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+                ADC_Setup   0x00038a    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                Hex_setup   0x00026e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+               LCD_Enable   0x00021e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+              LCD_Hex_Nib   0x0001be    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+         LCD_Loop_message   0x0001d4    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+          LCD_Send_Byte_D   0x0001fc    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+          LCD_Send_Byte_I   0x0001e0    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+             LCD_Send_Nib   0x0001ee    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                LCD_Setup   0x000150    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                  LCD_Top   0x0001a6    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+            LCD_Write_Hex   0x0001b4    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+        LCD_Write_Message   0x0001d2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                LCD_delay   0x000264    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+             LCD_delay_ms   0x000242    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+           LCD_delay_x4us   0x000250    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                   Read_x   0x0003a0    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   Read_y   0x0003ac    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   Read_z   0x0003b8    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+        UART_Loop_message   0x00044e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+               UART_Setup   0x00043a    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+       UART_Transmit_Byte   0x00045a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+    UART_Transmit_Message   0x00044c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+                 adc_loop   0x0003c4    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                    delay   0x000384    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
           find_difference   0x00011a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                  if_equal   0x00012c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
         initialize_second   0x0000ee    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                jump_equal   0x000130    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-                   lcdlp1   0x000394    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                   lcdlp2   0x000372    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                   lcdlp1   0x000266    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                   lcdlp2   0x000244    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
                      loop   0x00004a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                 loop1sec0   0x00007c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                 loop1sec1   0x000092    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-               loop4times   0x00042a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+               loop4times   0x000418    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
           loop_operations   0x0000a4    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-             measure_loop   0x00015e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-           multiply16by16   0x00020a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-            multiply8by16   0x00024c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-            multiply8by24   0x0001dc    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+             measure_loop   0x00027c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+           multiply16by16   0x000322    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+            multiply8by16   0x00035e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+            multiply8by24   0x0002fa    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
                 not_equal   0x000120    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                      rd00   0x000078    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                      rd01   0x00008e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-                   reduce   0x0003e0    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   reduce   0x0003ce    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
                     setup   0x000012    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                     start   0x00002a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                store_data   0x0000dc    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
@@ -94,8 +94,8 @@ Linker Map File - Created Fri Nov 16 13:12:37 2018
              update_x_max   0x000132    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
              update_y_max   0x00013c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
              update_z_max   0x000146    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-             updatecarry0   0x00043e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-             updatecarry1   0x000444    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+             updatecarry0   0x00042c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+             updatecarry1   0x000432    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
                 LCD_cnt_h   0x000011       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
                 LCD_cnt_l   0x000010       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
                LCD_cnt_ms   0x000012       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
@@ -168,40 +168,40 @@ Linker Map File - Created Fri Nov 16 13:12:37 2018
              update_x_max   0x000132    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
              update_y_max   0x00013c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
              update_z_max   0x000146    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
-                Hex_setup   0x000150    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-             measure_loop   0x00015e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-            multiply8by24   0x0001dc    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-           multiply16by16   0x00020a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-            multiply8by16   0x00024c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-                    delay   0x000278    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
-                LCD_Setup   0x00027e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                  LCD_Top   0x0002d4    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-            LCD_Write_Hex   0x0002e2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-              LCD_Hex_Nib   0x0002ec    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-        LCD_Write_Message   0x000300    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-         LCD_Loop_message   0x000302    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-          LCD_Send_Byte_I   0x00030e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-             LCD_Send_Nib   0x00031c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-          LCD_Send_Byte_D   0x00032a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-               LCD_Enable   0x00034c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-             LCD_delay_ms   0x000370    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                   lcdlp2   0x000372    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-           LCD_delay_x4us   0x00037e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                LCD_delay   0x000392    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                   lcdlp1   0x000394    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
-                ADC_Setup   0x00039c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   Read_x   0x0003b2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   Read_y   0x0003be    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   Read_z   0x0003ca    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                 adc_loop   0x0003d6    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-                   reduce   0x0003e0    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-               loop4times   0x00042a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-             updatecarry0   0x00043e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-             updatecarry1   0x000444    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
-               UART_Setup   0x00044c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-    UART_Transmit_Message   0x00045e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-        UART_Loop_message   0x000460    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
-       UART_Transmit_Byte   0x00046c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+                LCD_Setup   0x000150    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                  LCD_Top   0x0001a6    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+            LCD_Write_Hex   0x0001b4    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+              LCD_Hex_Nib   0x0001be    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+        LCD_Write_Message   0x0001d2    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+         LCD_Loop_message   0x0001d4    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+          LCD_Send_Byte_I   0x0001e0    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+             LCD_Send_Nib   0x0001ee    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+          LCD_Send_Byte_D   0x0001fc    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+               LCD_Enable   0x00021e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+             LCD_delay_ms   0x000242    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                   lcdlp2   0x000244    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+           LCD_delay_x4us   0x000250    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                LCD_delay   0x000264    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                   lcdlp1   0x000266    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\LCD.asm
+                Hex_setup   0x00026e    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+             measure_loop   0x00027c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+            multiply8by24   0x0002fa    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+           multiply16by16   0x000322    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+            multiply8by16   0x00035e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+                    delay   0x000384    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Hex_to_Decimal.asm
+                ADC_Setup   0x00038a    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   Read_x   0x0003a0    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   Read_y   0x0003ac    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   Read_z   0x0003b8    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                 adc_loop   0x0003c4    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+                   reduce   0x0003ce    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+               loop4times   0x000418    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+             updatecarry0   0x00042c    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+             updatecarry1   0x000432    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\ADC_read.asm
+               UART_Setup   0x00043a    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+    UART_Transmit_Message   0x00044c    program     extern C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+        UART_Loop_message   0x00044e    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
+       UART_Transmit_Byte   0x00045a    program     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\UART.asm
                 check1sec   0x000000       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                 temporary   0x000001       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
                       x_0   0x000002       data     static C:\Users\fsk16\MPLABXProjects\sleepmonitor\Interrupt.asm
