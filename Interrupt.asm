@@ -281,14 +281,16 @@ loop
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
     
-    movlw   0x03
+    movlw   0xFF
     cpfsgt  PORTD 
     bra loop
     
-    movlw   .8
-    movwf   PORTF
+    movlw   .255
     lfsr    FSR2, myTable
     call    UART_Transmit_Message    
+    call    UART_Transmit_Message 
+    call    UART_Transmit_Message 
+    call    UART_Transmit_Message 
     
     bra loop
     
