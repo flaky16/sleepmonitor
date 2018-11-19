@@ -22,7 +22,7 @@ z_t	res 1
 x_max	res 1
 y_max	res 1
 z_max	res 1
-	
+delay_ res 1 	
 ;values	res 4
 
 
@@ -63,16 +63,16 @@ start
     movwf   PORTD
     lfsr    FSR1 , 0x300
     lfsr    FSR2 , 0x300
-    movlw   0xFF
-    movwf   0x304
+   ; movlw   0xFF
+   ; movwf   0x303
 
 loop
     call    initialize_second
     
     btfss   PORTD, RD0		; Skip if RD0 is high (count)
     call    rd00
-    
-    movlw   0x05
+    call    delay
+    movlw   0x04
     lfsr    FSR2 , 0x300
     call    UART_Transmit_Message    
     
@@ -80,10 +80,13 @@ loop
     
     btfsc   PORTD, RD0		; Skip if RD0 is low (count)
     call    rd01
-    
-    movlw   0x05
+    call    delay
+    call    delay
+    movlw   0x04
     lfsr    FSR2 , 0x300
     call    UART_Transmit_Message 
+    call    delay
+    call    delay
     
     ;movlw   0x04
     ;cpfseq  PORTD
@@ -110,7 +113,7 @@ loop1sec0
     return
    
  rd01
-    call measure_loop   
+    call    measure_loop   
  loop1sec1			    ; Same loop as loop1sec0 
     call    loop_operations
     btfsc   PORTD, RD0		    ; Continue to loop until second has passed
@@ -147,7 +150,8 @@ store_data
     movff   x_max , POSTINC1
     movff   y_max , POSTINC1
     movff   z_max , POSTINC1
-    movff   PORTD , POSTINC1
+    movlw   0xFF
+    movwf   POSTINC1
   
     return
     
@@ -211,4 +215,7 @@ update_z_max
     movff   z_t , z_max		    ; Update z_max for this 1 sec interval
     return    
     
+delay	decfsz	delay_	; decrement until zero
+	bra delay
+	return    
     end

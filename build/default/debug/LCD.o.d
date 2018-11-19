@@ -1,3 +1,3 @@
 build/default/debug/LCD.o:  \
-	C:/Users/fsk16/MPLABXProjects/sleepmonitor/LCD.asm  \
+	C:/Users/av2116/MPLABXProjects/sleepmonitor/LCD.asm  \
 
