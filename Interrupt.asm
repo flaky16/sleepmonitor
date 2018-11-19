@@ -180,16 +180,16 @@ subtraction				; If x_0 > x_t -> subtract x_t from x_0 (in W)
 find_difference    ; x_0/y_0/z_0 recorded in W  , returns difference in ADRESL
     cpfseq  ADRESL
     bra	    not_equal
-    bra	    if_equal
+    bra	    if_equal			
  not_equal
-    cpfsgt  ADRESL
+    cpfsgt  ADRESL		    ; If data_t < data_max, call subtraction operation for data_max - data_t
     call    subtraction
     
-    cpfslt  ADRESL
+    cpfslt  ADRESL		    ; If data_t > data_max, data_t - data_max is the difference
     subwf   ADRESL, 1
-    bra	    jump_equal
+    bra	    jump_equal		    ; If not_equal, jump over equal operation
  
-if_equal
+if_equal			    ; If data_t = data_max, take difference as zero
     movlw   0x00
     movwf   ADRESL
     

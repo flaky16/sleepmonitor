@@ -13,10 +13,10 @@ ADC_Setup
     bsf	    TRISA,RA0	    ; use pin A0(==AN0) for input
     bsf	    ANCON0,ANSEL0   ; set A0 to analog
     
-    bsf	    TRISA,RA1	    ; use pin A0(==AN0) for input
+    bsf	    TRISA,RA1	    ; use pin A1(==AN1) for input
     bsf	    ANCON0,ANSEL1   ; set A1 to analog
     
-    bsf	    TRISA,RA2	    ; use pin A0(==AN0) for input
+    bsf	    TRISA,RA2	    ; use pin A2(==AN2) for input
     bsf	    ANCON0,ANSEL2   ; set A2 to analog    
   
     movlw   0x20	    ; Select 4.096V positive reference
