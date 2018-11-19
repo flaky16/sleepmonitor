@@ -137,7 +137,7 @@ loop_operations
     movff   ADRESL , y_t	    ; The difference is stored
     call    update_y_max	    ; Check if y_t > y_max for 1 second interval
 
-    call    Read_y		    ; Get 8-bit number for z at time t
+    call    Read_z		    ; Get 8-bit number for z at time t
     movf    z_0 , W
     call    find_difference	    ; Get deviation from z_0
     movff   ADRESL , z_t	    ; The difference is stored
