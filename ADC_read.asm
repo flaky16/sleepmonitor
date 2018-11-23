@@ -19,7 +19,7 @@ ADC_Setup
     bsf	    TRISA,RA2	    ; use pin A2(==AN2) for input
     bsf	    ANCON0,ANSEL2   ; set A2 to analog    
   
-    movlw   0x20	    ; Select 4.096V positive reference
+    movlw   0x20	    ; Select 2.048V positive reference
     movwf   ADCON1	    ; 0V for -ve reference and -ve input
     movlw   0xF6	    ; Right justified output
     movwf   ADCON2	    ; Fosc/64 clock and acquisition times
