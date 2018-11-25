@@ -67,60 +67,46 @@ start
    ; movwf   0x303
 
 loop
-    call    initialize_second
+    call    initialize_second			; Set V0, Vmax = 0 
     
-    btfss   PORTD, RD0		; Skip if RD0 is high (count)
-    call    rd00
+    btfss   PORTD, RD0				; Skip if RD0 is high (count)
+    call    rd00				; Subroutine for a sample
     call    delay
-    movlw   0x04
-    lfsr    FSR2 , 0x300
+    movlw   0x04				; Number of bytes to transmit
+    lfsr    FSR2 , 0x300			; Location of data
     call    UART_Transmit_Message    
     
-    call    initialize_second	; Set V0, Vmax = 0 
+    call    initialize_second			; Set V0, Vmax = 0 
     
-    btfsc   PORTD, RD0		; Skip if RD0 is low (count)
-    call    rd01
+    btfsc   PORTD, RD0				; Skip if RD0 is low (count)
+    call    rd01				; Subroutine for a sample
     call    delay
-    call    delay
-    movlw   0x04
-    lfsr    FSR2 , 0x300
+    movlw   0x04				; Number of bytes to transmit
+    lfsr    FSR2 , 0x300			; Location of data
     call    UART_Transmit_Message 
-    call    delay
-    call    delay
-    
-    ;movlw   0x04
-    ;cpfseq  PORTD
+
     bra     loop
-    
-;    movlw   0x04
-;    call    UART_Transmit_Message    
-;    movlw   0x04
-;    call    UART_Transmit_Message    
-;    movlw   0x04
-;    call    UART_Transmit_Message    
-    
-;    bra loop
+
+
     
 rd00
-    call    measure_loop		    ; Display time in LCD
+    call    measure_loop		    	; Display time in LCD
 loop1sec0
     call    loop_operations
-    btfss   PORTD, RD0		    ; Continue to loop until second has passed
+    btfss   PORTD, RD0		    		; Continue to loop until second has passed
     bra	    loop1sec0
     call    store_data
-     
-    movff   y_max , PORTE
+    
     return
    
  rd01
-    call    measure_loop   
- loop1sec1			    ; Same loop as loop1sec0 
+    call    measure_loop   		    	; Display time in LCD
+ loop1sec1			    		; Same loop as loop1sec0 
     call    loop_operations
-    btfsc   PORTD, RD0		    ; Continue to loop until second has passed
+    btfsc   PORTD, RD0		   		; Continue to loop until second has passed
     bra	    loop1sec1
     call    store_data
     
-    movff   z_max , PORTE
     return
     
 loop_operations
