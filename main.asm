@@ -34,7 +34,7 @@ int_hi code 0x0008 ; high vector, no low vector
     incf    LATD ; increment PORTD
     bcf	    INTCON,TMR0IF ; clear interrupt flag 
     retfie  FAST ; fast return from interrupt
-    
+   
 main	code
 	
 	; ******* Programme FLASH read Setup Code ***********************
@@ -48,12 +48,12 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start 	
-    clrf    TRISD ; Set PORTD as all outputs 
-    clrf    LATD ; Clear PORTD outputs 
-    movlw   b'10000100' ; Set timer0 to 16-bit, Fosc/4/32
-    movwf   T0CON ; = 500 KHz clock rate, approx 1/8 sec rollover 
-    bsf	    INTCON,TMR0IE ; Enable timer0 interrupt 
-    bsf	    INTCON,GIE ; Enable all interrupts 
+    clrf    TRISD 			; Set PORTD as all outputs 
+    clrf    LATD 			; Clear PORTD outputs 
+    movlw   b'10000100' 		; Set timer0 to 16-bit, Fosc/4/32
+    movwf   T0CON			; = 500 KHz clock rate, approx 1/8 sec rollover 
+    bsf	    INTCON,TMR0IE 		; Enable timer0 interrupt 
+    bsf	    INTCON,GIE 			; Enable all interrupts 
     movlw   0x00
     movwf   TRISE
     movlw   0x00
