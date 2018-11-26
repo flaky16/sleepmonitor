@@ -22,8 +22,7 @@ z_t	res 1
 x_max	res 1
 y_max	res 1
 z_max	res 1
-delay_ res 1 	
-;values	res 4
+delay_ res 1 
 
 
 rst	code	0    ; reset vector
@@ -51,20 +50,16 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 start 	
     clrf    TRISD ; Set PORTD as all outputs 
     clrf    LATD ; Clear PORTD outputs 
-    movlw   b'10000111' ; Set timer0 to 16-bit, Fosc/4/256 
-    movwf   T0CON ; = 62.5KHz clock rate, approx 1sec rollover 
+    movlw   b'10000100' ; Set timer0 to 16-bit, Fosc/4/32
+    movwf   T0CON ; = 500 KHz clock rate, approx 1/8 sec rollover 
     bsf	    INTCON,TMR0IE ; Enable timer0 interrupt 
     bsf	    INTCON,GIE ; Enable all interrupts 
     movlw   0x00
     movwf   TRISE
     movlw   0x00
-    movwf   TRISF
-    movlw   0x00
     movwf   PORTD
-    lfsr    FSR1 , 0x300
+    lfsr    FSR1 , 0x300			; Location to store data
     lfsr    FSR2 , 0x300
-   ; movlw   0xFF
-   ; movwf   0x303
 
 loop
     call    initialize_second			; Set V0, Vmax = 0 
